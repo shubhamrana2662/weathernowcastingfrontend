@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SafeLoop — From SOS to Safe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0F19;--bg2:#0D1322;--surface:#111A2C;--surface2:#16223A;--surface3:#1C2B48;
+  --line:#223252;--line2:#2C3F66;
+  --text:#E9EFFA;--muted:#93A2C0;--faint:#5C6D8E;
+  --red:#FF4D5E;--orange:#FF9A3D;--yellow:#FFC94D;--blue:#4D9FFF;--green:#2FD6A3;--teal:#2FD6C4;
+  --r:14px;--shadow:0 14px 40px -14px rgba(0,0,0,.55);
+  --font:'Inter',system-ui,sans-serif;--disp:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:700;line-height:1.15;letter-spacing:-.01em}
+a{color:var(--blue);text-decoration:none}
+button{font-family:inherit}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(77,159,255,.3)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px}::-webkit-scrollbar-track{background:transparent}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card.hov:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);border-color:var(--line2);background:var(--surface3)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#06101F}
+.btn-primary:hover{background:#66AEFF;border-color:#66AEFF}
+.btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn-danger:hover{background:#FF6B79;border-color:#FF6B79}
+.btn-green{background:var(--green);border-color:var(--green);color:#05221A}
+.btn-green:hover{background:#4EE2B5;border-color:#4EE2B5}
+.btn-ghost{background:transparent}
+.btn.lg{padding:14px 24px;font-size:15.5px;border-radius:12px}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.btn-ic{padding:9px;border-radius:10px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:.05em;border:1px solid;white-space:nowrap}
+.badge i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.b-red{color:#FF8A94;border-color:rgba(255,77,94,.45);background:rgba(255,77,94,.1)}
+.b-orange{color:#FFB877;border-color:rgba(255,154,61,.45);background:rgba(255,154,61,.1)}
+.b-yellow{color:#FFE094;border-color:rgba(255,201,77,.4);background:rgba(255,201,77,.08)}
+.b-blue{color:#8FC3FF;border-color:rgba(77,159,255,.45);background:rgba(77,159,255,.1)}
+.b-green{color:#7AE8C6;border-color:rgba(47,214,163,.45);background:rgba(47,214,163,.1)}
+.b-teal{color:#7AE8DD;border-color:rgba(47,214,196,.4);background:rgba(47,214,196,.08)}
+.b-muted{color:var(--muted);border-color:var(--line);background:var(--surface2)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);font-size:12.5px;color:var(--muted)}
+.bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .7s cubic-bezier(.22,1,.36,1)}
+.bar .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:rgba(255,255,255,.4)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.kv:last-child{border:0}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:600;text-align:right}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .ic{width:52px;height:52px;border-radius:14px;border:1px dashed var(--line2);display:grid;place-items:center;margin:0 auto 14px;color:var(--faint)}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.land{min-height:100vh}
+.land-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px 5vw;background:rgba(10,15,25,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:19px}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:var(--surface2);border:1px solid var(--line2);display:grid;place-items:center;color:var(--green);flex:none}
+.land-links{display:flex;gap:26px;color:var(--muted);font-size:14px;font-weight:500}
+.land-links span{cursor:pointer;transition:color .15s}
+.land-links span:hover{color:var(--text)}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding:72px 5vw 60px;max-width:1280px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;color:var(--green);border:1px solid rgba(47,214,163,.35);background:rgba(47,214,163,.06);padding:7px 14px;border-radius:99px;margin-bottom:26px}
+.hero-badge i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:softPulse 2s infinite}
+h1.hero-h{font-size:clamp(46px,6.4vw,84px);letter-spacing:-.03em}
+h1.hero-h em{font-style:normal;color:var(--green)}
+.hero-sub{font-size:19px;color:var(--text);margin:22px 0 10px;font-weight:500;max-width:520px}
+.hero-support{color:var(--muted);max-width:540px;margin-bottom:32px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.hero-meta{font-size:11px;letter-spacing:.12em;color:var(--faint)}
+.hero-viz{display:flex;justify-content:center}
+#hubSvg{width:100%;max-width:560px}
+.loopRing{transform-box:fill-box;transform-origin:center}
+section.land-sec{padding:72px 5vw;max-width:1200px;margin:0 auto;border-top:1px solid var(--line)}
+.sec-kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;color:var(--red);margin-bottom:12px}
+.sec-kicker.ok{color:var(--green)}
+.sec-title{font-size:clamp(26px,3.4vw,38px);margin-bottom:14px;max-width:640px}
+.sec-sub{color:var(--muted);max-width:640px;margin-bottom:38px}
+.chain{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.chain-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 14px;position:relative;text-align:center}
+.chain-item .cn{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.12em}
+.chain-item .ct{font-weight:700;font-size:14.5px;margin-top:6px}
+.chain-item .ci{width:38px;height:38px;margin:0 auto 10px;border-radius:11px;display:grid;place-items:center;border:1px solid var(--line2);color:var(--muted)}
+.chain.broken .chain-item{border-color:rgba(255,77,94,.28)}
+.chain.broken .chain-item .ci{color:#FF8A94;border-color:rgba(255,77,94,.35);background:rgba(255,77,94,.07)}
+.chain.okc .chain-item .ci{color:#7AE8C6;border-color:rgba(47,214,163,.35);background:rgba(47,214,163,.06)}
+.chain.okc .chain-item{border-color:rgba(47,214,163,.22)}
+.chain-conn{position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--faint);z-index:2}
+.chain.broken .chain-conn{color:rgba(255,77,94,.5)}
+.chain.okc .chain-conn{color:var(--green)}
+.usp-band{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:48px;display:grid;grid-template-columns:auto 1fr;gap:44px;align-items:center;margin-top:52px;position:relative;overflow:hidden}
+.loop-visual{width:180px;height:180px;position:relative;display:grid;place-items:center}
+.loop-visual svg{position:absolute;inset:0;width:100%;height:100%}
+.loop-word{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--green)}
+.usp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
+.usp-point{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.usp-point b{display:block;margin-bottom:6px;font-size:14.5px}
+.usp-point span{color:var(--muted);font-size:13px}
+.cycle{display:flex;gap:0;overflow-x:auto;padding:8px 2px 16px}
+.cycle-step{flex:1;min-width:150px;position:relative;padding:16px 14px 16px 22px;background:var(--bg2);border:1px solid var(--line);border-right:0}
+.cycle-step:first-child{border-radius:12px 0 0 12px}.cycle-step:last-child{border-radius:0 12px 12px 0;border-right:1px solid var(--line)}
+.cycle-step::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%) rotate(45deg);width:12px;height:12px;background:var(--bg2);border-top:1px solid var(--line);border-right:1px solid var(--line);z-index:2}
+.cycle-step:last-child::after{display:none}
+.cycle-step .cn{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em}
+.cycle-step .ct{font-weight:700;font-size:13px;margin-top:4px}
+.stake-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.stake{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 12px;text-align:center}
+.stake .si{width:40px;height:40px;margin:0 auto 10px;border-radius:11px;display:grid;place-items:center;border:1px solid var(--line2)}
+.stake b{font-size:13px;display:block}
+.stake span{font-size:11.5px;color:var(--faint)}
+.footer-land{border-top:1px solid var(--line);padding:40px 5vw;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+@keyframes softPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes mkPulse{0%{transform:scale(.8);opacity:.9}100%{transform:scale(2.3);opacity:0}}
+
+.shell{display:grid;grid-template-columns:242px 1fr;height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;overflow-y:auto}
+.sidebar .brand{padding:4px 8px 18px}
+.nav-sec{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--faint);padding:14px 10px 8px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--muted);font-weight:500;font-size:14px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:all .15s}
+.nav-item:hover{color:var(--text);background:var(--surface)}
+.nav-item.active{color:var(--text);background:var(--surface2);border-color:var(--line)}
+.nav-item .nv{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.nav-bottom{margin-top:auto;border-top:1px solid var(--line);padding-top:10px}
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{height:62px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 22px;background:rgba(13,19,34,.7);backdrop-filter:blur(8px)}
+.topbar .pg{font-family:var(--disp);font-weight:600;font-size:16.5px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tb-clock{font-family:var(--mono);font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:softPulse 1.8s infinite}
+.bell-btn{position:relative}
+.bell-n{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:99px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.hamb{display:none}
+.content{flex:1;overflow-y:auto;padding:24px 26px 60px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.page-head h2{font-size:23px}
+.page-head .sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.metrics.m4{grid-template-columns:repeat(4,1fr)}
+.stat{display:flex;gap:13px;align-items:center;padding:16px}
+.stat-ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;border:1px solid var(--line2);flex:none}
+.c-red{color:var(--red);background:rgba(255,77,94,.09)}
+.c-orange{color:var(--orange);background:rgba(255,154,61,.09)}
+.c-yellow{color:var(--yellow);background:rgba(255,201,77,.08)}
+.c-blue{color:var(--blue);background:rgba(77,159,255,.09)}
+.c-green{color:var(--green);background:rgba(47,214,163,.09)}
+.c-teal{color:var(--teal);background:rgba(47,214,196,.08)}
+.stat-v{font-family:var(--disp);font-size:27px;font-weight:700;line-height:1.1}
+.stat-l{font-size:10.5px;letter-spacing:.1em;color:var(--faint);margin-top:3px}
+.dash-grid{display:grid;grid-template-columns:280px 1fr 340px;gap:14px;align-items:start}
+.col-stack{display:flex;flex-direction:column;gap:14px}
+.mini-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint);margin-bottom:12px}
+.pmix-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px}
+.pmix-row .pl{width:64px;color:var(--muted)}
+.pmix-row .bar{flex:1}
+.pmix-row .pv{font-family:var(--mono);font-size:12px;width:20px;text-align:right}
+
+.opmap{position:relative;background:#0C1322;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-height:460px}
+.opmap .maptop{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--faint);z-index:6;background:linear-gradient(rgba(12,19,34,.9),rgba(12,19,34,0))}
+.opmap .gridbg{position:absolute;inset:0;background-image:linear-gradient(rgba(77,159,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(77,159,255,.05) 1px,transparent 1px);background-size:44px 44px}
+.opmap .river{position:absolute;inset:0;width:100%;height:100%}
+.map-zone{position:absolute;border:1px dashed;border-radius:10px;display:flex;align-items:flex-start;padding:7px 9px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;z-index:1;pointer-events:none}
+.mk{position:absolute;transform:translate(-50%,-50%);background:none;border:0;cursor:pointer;z-index:3;display:grid;place-items:center;padding:0}
+.mk .dot{width:13px;height:13px;border-radius:50%;transition:transform .2s}
+.mk.inc .dot.crit{background:var(--red);box-shadow:0 0 0 4px rgba(255,77,94,.15)}
+.mk.inc .dot.high{background:var(--orange)}
+.mk.inc .dot.med{background:var(--yellow)}
+.mk.inc .dot.low{background:var(--blue)}
+.mk.inc.crit::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;border:2px solid var(--red);animation:mkPulse 2.2s ease-out infinite}
+.mk .mlab{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--text);background:rgba(10,15,25,.85);border:1px solid var(--line);padding:2px 6px;border-radius:6px;white-space:nowrap}
+.mk.team .dot{background:var(--blue);border-radius:3px;transform:rotate(45deg);box-shadow:0 0 0 3px rgba(77,159,255,.14)}
+.mk.shelt .dot{background:var(--green);border-radius:4px;box-shadow:0 0 0 3px rgba(47,214,163,.14)}
+.mk:hover .dot{transform:scale(1.35)}
+.mk.team:hover .dot{transform:rotate(45deg) scale(1.3)}
+.mk.sel{z-index:5}
+.mk.sel .dot{outline:2px solid #fff;outline-offset:2px}
+.map-legend{position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:12px;flex-wrap:wrap;background:rgba(10,15,25,.85);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:11px;color:var(--muted)}
+.map-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.queue-item{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;cursor:pointer;background:var(--bg2);transition:all .15s}
+.queue-item:hover{border-color:var(--line2);transform:translateY(-1px)}
+.queue-item.sel{border-color:var(--blue);background:rgba(77,159,255,.06)}
+.queue-item .qid{font-family:var(--mono);font-size:12px;font-weight:600}
+.queue-item .ql{font-size:12.5px;color:var(--muted);margin-top:2px}
+.queue-item .qs{font-family:var(--mono);font-size:16px;font-weight:600}
+.act-feed .af-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px;align-items:baseline}
+.act-feed .af-item:last-child{border:0}
+.af-t{font-family:var(--mono);font-size:11px;color:var(--faint);flex:none;width:44px}
+.af-id{font-family:var(--mono);font-size:11px;color:var(--blue);flex:none}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg2);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--surface3);border-color:var(--line2);color:var(--text)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input.inp,select.inp,textarea.inp{background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 13px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;width:100%}
+input.inp:focus,select.inp:focus,textarea.inp:focus{border-color:var(--blue)}
+select.inp{cursor:pointer}
+.tb-wrap{overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;min-width:820px}
+.tb th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--faint);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:500}
+.tb td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.tb tbody tr{cursor:pointer;transition:background .12s}
+.tb tbody tr:hover{background:rgba(77,159,255,.05)}
+
+.tl{position:relative;padding-left:24px}
+.tl::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.tl-item{position:relative;padding:0 0 16px 12px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:'';position:absolute;left:-22px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface3);border:2px solid var(--line2)}
+.tl-item.hl::before{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px rgba(77,159,255,.15)}
+.tl-item .tt{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.tl-item .tl-t{font-size:13.5px;margin-top:1px}
+.stages{display:flex;flex-direction:column;gap:0}
+.stage{display:flex;gap:16px;position:relative;padding-bottom:26px}
+.stage:last-child{padding-bottom:0}
+.stage .sd{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;flex:none;background:var(--bg2);color:transparent;z-index:2}
+.stage::before{content:'';position:absolute;left:12px;top:26px;bottom:2px;width:2px;background:var(--line)}
+.stage:last-child::before{display:none}
+.stage.done .sd{background:var(--green);border-color:var(--green);color:#05221A}
+.stage.done::before{background:var(--green)}
+.stage.cur .sd{border-color:var(--blue);color:var(--blue);animation:softPulse 1.6s infinite;box-shadow:0 0 0 5px rgba(77,159,255,.12)}
+.stage.cur::before{background:linear-gradient(var(--blue),var(--line))}
+.stage .sl{font-weight:600;font-size:15px;padding-top:2px}
+.stage.cur .sl{color:var(--blue)}
+.stage .st{font-size:12px;color:var(--faint);font-family:var(--mono);margin-top:2px}
+.stage.future .sl{color:var(--faint)}
+.mini-stages{display:flex;gap:5px;align-items:center;margin:8px 0}
+.mini-stages b{width:9px;height:9px;border-radius:50%;background:var(--surface3);border:1px solid var(--line2)}
+.mini-stages b.on{background:var(--green);border-color:var(--green)}
+.mini-stages b.cur{background:var(--blue);border-color:var(--blue);animation:softPulse 1.4s infinite}
+.mini-stages s{flex:1;height:2px;background:var(--line);text-decoration:none}
+.mini-stages s.on{background:var(--green)}
+
+.detail-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:start}
+.score-hero{display:flex;gap:20px;align-items:center;margin-bottom:16px}
+.score-num{font-family:var(--disp);font-size:52px;font-weight:700;line-height:1}
+.insight{display:flex;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,77,94,.06);border:1px solid rgba(255,77,94,.22);margin-bottom:8px;font-size:13.5px}
+.insight.plus::before{content:'+';font-weight:800;color:var(--red)}
+.factor{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.factor:last-child{border:0}
+.factor .fv{font-family:var(--mono);font-weight:600}
+
+.sos-page{max-width:760px;margin:0 auto}
+.wiz-dots{display:flex;gap:8px;margin-bottom:26px}
+.wd{flex:1;height:4px;border-radius:99px;background:var(--surface3)}
+.wd.on{background:var(--red)}
+.sos-core-btn{position:relative;width:210px;height:210px;margin:8px auto 22px;background:none;border:0;cursor:pointer;display:grid;place-items:center}
+.sos-ring{position:absolute;inset:14px;border-radius:50%;border:1px solid rgba(255,77,94,.5);animation:sosPulse 2.8s ease-out infinite}
+.sos-ring.r2{animation-delay:1.4s}
+@keyframes sosPulse{0%{transform:scale(.8);opacity:.85}100%{transform:scale(1.25);opacity:0}}
+.sos-btn-in{width:160px;height:160px;border-radius:50%;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff;font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:.24em;box-shadow:0 22px 60px -14px rgba(255,77,94,.6);transition:transform .18s}
+.sos-core-btn:hover .sos-btn-in{transform:scale(1.04)}
+.sos-core-btn:active .sos-btn-in{transform:scale(.95)}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat{padding:18px 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);text-align:center;cursor:pointer;transition:all .15s;font-weight:600;font-size:13px;color:var(--muted)}
+.cat:hover{border-color:var(--line2);transform:translateY(-2px);color:var(--text)}
+.cat.sel{border-color:var(--red);color:var(--text);background:rgba(255,77,94,.07)}
+.cat .ci{margin-bottom:8px;color:var(--red)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.fg.full{grid-column:1/-1}
+.check{display:flex;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);cursor:pointer;font-size:14px}
+.check input{width:16px;height:16px;accent-color:var(--red)}
+.scanbox{border:1px solid var(--line);border-radius:16px;background:var(--bg2);padding:44px 20px;text-align:center;position:relative;overflow:hidden}
+.scanline{position:absolute;left:0;right:0;height:2px;background:var(--red);opacity:.7;box-shadow:0 0 18px rgba(255,77,94,.8)}
+.pri-reveal{text-align:center;padding:20px 0}
+.pri-word{font-family:var(--disp);font-size:46px;font-weight:700;letter-spacing:.06em}
+.score-meter{max-width:420px;margin:18px auto 8px}
+.succ-check{width:78px;height:78px;border-radius:50%;border:2px solid var(--green);display:grid;place-items:center;margin:0 auto 18px;color:var(--green);background:rgba(47,214,163,.08)}
+.req-id{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:.06em;background:var(--bg2);border:1px solid var(--line2);display:inline-block;padding:10px 22px;border-radius:12px;margin:10px 0 4px}
+
+.cit-top{display:flex;align-items:center;gap:18px;padding:14px 5vw;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,15,25,.85);backdrop-filter:blur(10px);z-index:40}
+.cit-links{display:flex;gap:6px}
+.cit-link{padding:8px 14px;border-radius:9px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent}
+.cit-link:hover{color:var(--text);background:var(--surface)}
+.cit-link.active{color:var(--text);background:var(--surface2);border-color:var(--line)}
+.cit-main{max-width:1100px;margin:0 auto;padding:30px 5vw 70px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.qc{display:flex;gap:13px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;transition:all .18s;text-align:left;color:var(--text);width:100%}
+.qc:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow)}
+.qc .qi{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;border:1px solid var(--line2);flex:none}
+.alert-item{border-left:3px solid var(--line2);border-radius:10px;background:var(--bg2);padding:14px 16px;margin-bottom:10px}
+.alert-item h4{font-size:14.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.alert-item p{font-size:13px;color:var(--muted);margin-top:6px}
+.contact-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.contact-row:last-child{border:0}
+
+.modal-ov{position:fixed;inset:0;background:rgba(5,8,14,.72);backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--line2);border-radius:18px;padding:24px;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal h3{margin-bottom:4px}
+.modal .msub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+.drawer-ov{position:fixed;inset:0;background:rgba(5,8,14,.5);z-index:90}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,94vw);background:var(--bg2);border-left:1px solid var(--line2);z-index:95;display:flex;flex-direction:column}
+.drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.drawer .db{flex:1;overflow-y:auto;padding:14px 16px}
+.drawer .df{border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:10px}
+.notif-item{display:flex;gap:12px;padding:13px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;background:var(--surface);cursor:pointer;position:relative}
+.notif-item.unread{border-color:var(--line2);background:var(--surface2)}
+.notif-item.unread::after{content:'';position:absolute;top:14px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.notif-item .nt{font-size:13.5px;font-weight:600}
+.notif-item .nm{font-size:12.5px;color:var(--muted);margin-top:2px}
+.notif-item .nts{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:5px}
+#toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;gap:8px;align-items:center}
+body.demo-on #toasts{bottom:92px}
+.toast{background:var(--surface3);border:1px solid var(--line2);border-radius:12px;padding:11px 18px;font-size:13.5px;font-weight:600;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow)}
+.toast.t-green{border-color:rgba(47,214,163,.5);color:#9BEBD2}
+.toast.t-red{border-color:rgba(255,77,94,.5);color:#FFA3AA}
+.toast.t-blue{border-color:rgba(77,159,255,.5);color:#A7CEFF}
+
+.demo-bar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:110;background:var(--surface3);border:1px solid var(--line2);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);max-width:min(720px,94vw)}
+.demo-bar .dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--green)}
+.demo-bar .ds{font-size:13.5px;font-weight:600}
+
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.fac{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:3px 8px;margin:0 6px 6px 0}
+.res-bar{height:12px;border-radius:99px;background:var(--bg2);position:relative;overflow:hidden;border:1px solid var(--line)}
+.res-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:0 99px 99px 0}
+.res-bar i:first-child{border-radius:99px}
+.hbar .hrow{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.hbar .hl{width:150px;font-size:13px;color:var(--muted);flex:none}
+.hbar .htrack{flex:1;height:10px;background:var(--bg2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.hbar .htrack i{display:block;height:100%;border-radius:99px}
+.hbar .hv{width:34px;text-align:right;font-size:12px}
+.donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.donut{width:130px;height:130px}
+.dleg div{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:7px}
+.dleg i{width:10px;height:10px;border-radius:3px}
+.ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wk-lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px}
+
+@media(max-width:1150px){
+  .metrics{grid-template-columns:repeat(3,1fr)}
+  .metrics.m4{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .dash-grid .col-map{grid-column:1/-1;order:-1}
+  .detail-grid,.ana-grid{grid-template-columns:1fr}
+}
+@media(max-width:920px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:80;transform:translateX(-105%);transition:transform .25s}
+  body.nav-open .sidebar{transform:none;box-shadow:var(--shadow)}
+  .hamb{display:inline-flex}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metrics.m4{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr;padding-top:44px}
+  .hero-viz{display:none}
+  .chain{grid-template-columns:repeat(2,1fr)}
+  .chain-conn{display:none}
+  .stake-grid{grid-template-columns:repeat(3,1fr)}
+  .usp-band{grid-template-columns:1fr;padding:30px}
+  .usp-grid{grid-template-columns:1fr}
+  .quick,.cat-grid{grid-template-columns:repeat(2,1fr)}
+  .fgrid{grid-template-columns:1fr}
+  .land-links{display:none}
+  .cit-links{overflow-x:auto}
+  .tb-clock{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<noscript><p style="padding:40px;font-family:sans-serif">SafeLoop requires JavaScript to run. Please enable it and reload.</p></noscript>
+<div id="app"></div>
+<div id="toasts"></div>
+<script>
+/* =====================================================================
+   SAFELOOP — From SOS to Safe
+   Closed-loop disaster response coordination · frontend-only prototype
+===================================================================== */
+'use strict';
+const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
+const RM0=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let RM=RM0;
+
+/* ---- Graceful no-CDN fallback: app stays fully functional without anime.js ---- */
+function fallbackAnimate(o){
+  try{
+    let ts=o.targets;
+    if(typeof ts==='string')ts=[...document.querySelectorAll(ts)];
+    else if(ts instanceof Element)ts=[ts];
+    else if(!Array.isArray(ts))ts=[ts];
+    const skip={targets:1,easing:1,delay:1,duration:1,complete:1,loop:1,direction:1,round:1,endDelay:1,update:1,stagger:1,autoplay:1};
+    ts.forEach(t=>{ if(!t)return;
+      for(const k in o){ if(skip[k])continue;
+        let v=Array.isArray(o[k])?o[k][1]:o[k];
+        if(k==='innerText'||k==='innerHTML'||k==='textContent'){t[k]=v;continue;}
+        if(k==='translateX'||k==='translateY'||k==='scale'||k==='rotate'||k==='strokeDashoffset')continue;
+        if(typeof v==='number'){ if(k==='opacity')t.style.opacity=v; else t.style[k]=v+'px'; }
+        else t.style[k]=v;
+      }});
+    if(typeof o.complete==='function')o.complete();
+  }catch(e){}
+}
+if(typeof window.anime==='undefined'){
+  window.anime=function(o){fallbackAnimate(o);return{finished:Promise.resolve(),pause(){},play(){}};};
+  window.anime.stagger=function(){return 0;};
+  window.anime.setDashoffset=function(){return 0;};
+  window.anime.remove=function(){};
+}
+const ani=o=>{ if(RM){ if(o.loop)return null; o.duration=0; } return anime(o); };
+
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function ago(ts){const m=Math.max(0,Math.round((Date.now()-ts)/6e4));if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return m%60?h+'h '+(m%60)+'m ago':h+'h ago';return Math.floor(h/24)+'d ago';}
+const fmtT=ts=>new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const fmtDT=ts=>new Date(ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+/* ---------------- ICONS ---------------- */
+const IC={
+siren:'<path d="M12 2v3M4.2 5.2l2.1 2.1M2 13h3M19 13h3M17.7 7.3l2.1-2.1"/><path d="M7 17v-4a5 5 0 0 1 10 0v4"/><path d="M5 21h14M9 17h6"/>',
+alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+helmet:'<path d="M2 18h20"/><path d="M4 18v-3a8 8 0 0 1 16 0v3"/><path d="M12 3v4"/><path d="M9 21h6"/>',
+home:'<path d="M3 9.5 12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20z"/><path d="M9 21v-7h6v7"/>',
+cross:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
+chart:'<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/><path d="M2 20h20"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/>',
+pin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+droplet:'<path d="M12 2.7s6.5 6.6 6.5 11a6.5 6.5 0 0 1-13 0c0-4.4 6.5-11 6.5-11z"/>',
+flame:'<path d="M12 22c4.4 0 7-2.8 7-6.6 0-3.4-2.3-5.8-3.9-7.4-.6 1.5-1.4 2.3-2.6 2.9C12.3 8.4 11.6 5.6 9.3 3 8 6 5 8.5 5 13.4 5 19.2 7.6 22 12 22z"/>',
+quake:'<path d="M22 12h-4l-3 8L9 4l-3 8H2"/>',
+mountain:'<path d="m8 3 4 8 4.5-4.5L21 20H3z"/><path d="M8 3v6"/>',
+truck:'<path d="M1 5h13v11H1z"/><path d="M14 9h4l3 4v3h-7V9z"/><circle cx="6" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',
+x:'<path d="M18 6 6 18M6 6l12 12"/>',
+arrowR:'<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+play:'<path d="m6 4 14 8-14 8z"/>',
+refresh:'<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/>',
+loop:'<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3A19.5 19.5 0 0 1 5.2 13 19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/>',
+heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+clip:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>',
+eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+radio:'<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/>',
+zap:'<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+list:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>',
+send:'<path d="m22 2-11 11"/><path d="M22 2 15 22l-4-9-9-4z"/>',
+swap:'<path d="m17 2 4 4-4 4"/><path d="M21 6H8a5 5 0 0 0-5 5"/><path d="m7 22-4-4 4-4"/><path d="M3 18h13a5 5 0 0 0 5-5"/>',
+pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+};
+const ico=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
+
+/* ---------------- STORE & MOCK DATA ---------------- */
+const KEY='safeloop_v3';
+let S, UI={sel:null,lastRoute:null,f:{q:'',pr:'',ty:'',tab:'ALL'},sos:{step:1,type:null,phase:'scan',done:null,form:{name:'',phone:'',loc:'',people:1,injury:'none',danger:'low',trapped:false,vuln:false,notes:''}},trackId:null,drawer:false};
+const FLOW=['RECEIVED','UNDER REVIEW','PRIORITY ASSESSED','TEAM ASSIGNED','EN ROUTE','RESCUE IN PROGRESS','EVACUATED','RESOLVED'];
+const STAGES7=['Request Received','Under Review','Priority Assigned','Response Team Assigned','Team En Route','Rescue In Progress','Safe / Resolved'];
+const STAGE_IDX={'RECEIVED':0,'UNDER REVIEW':1,'PRIORITY ASSESSED':2,'TEAM ASSIGNED':3,'EN ROUTE':4,'RESCUE IN PROGRESS':5,'EVACUATED':6,'RESOLVED':6};
+const STATUS_COLOR={'RECEIVED':'blue','UNDER REVIEW':'yellow','PRIORITY ASSESSED':'yellow','TEAM ASSIGNED':'blue','EN ROUTE':'orange','RESCUE IN PROGRESS':'orange','EVACUATED':'teal','RESOLVED':'green','AVAILABLE':'green','DEPLOYED':'orange','ASSIGNED':'orange','NEAR FULL':'orange','LIMITED CAPACITY':'yellow','FULL':'red','SUFFICIENT':'green','LOW':'yellow','CRITICAL':'red'};
+const TYPE_ICON={'Flood':'droplet','Fire':'flame','Earthquake Damage':'quake','Landslide':'mountain','Medical Emergency':'cross','Trapped / Rescue Required':'users','Other':'clip'};
+const TYPE_SKILLS={'Flood':['Logistics','Food Distribution'],'Fire':['Logistics','Shelter Support'],'Earthquake Damage':['Search & Rescue','Medical Assistance'],'Landslide':['Search & Rescue'],'Medical Emergency':['Medical Assistance'],'Trapped / Rescue Required':['Search & Rescue'],'Other':['Shelter Support']};
+const STATUS_TL={'UNDER REVIEW':'Request under review by command center','PRIORITY ASSESSED':'Priority assessed and confirmed','TEAM ASSIGNED':'Response team assigned','EN ROUTE':'Team en route to scene','RESCUE IN PROGRESS':'Rescue operation started','EVACUATED':'Victims evacuated to shelter','RESOLVED':'Incident resolved — case closed'};
+
+function DEFAULT(){
+  const n=Date.now(),M=m=>n-m*6e4,TL=(m,l)=>({ts:M(m),label:l});
+  return {v:3,role:null,seq:207,resolvedToday:2,week:[12,18,9,22,15,19,26],hist:{resolved:32,people:128},
+  prefs:{rm:false},allocLog:[{ts:M(12),txt:'40 Units Water Supply → DM-201'},{ts:M(8),txt:'6 Units Medical Kits → DM-201'}],
+  incidents:[
+   {id:'DM-201',type:'Flood',location:'Riverside Sector · Block C',x:63,y:34,people:6,injuries:'severe',danger:'extreme',trapped:true,vulnerable:true,desc:'Family of six trapped on a rooftop as floodwater keeps rising. The grandmother is showing signs of hypothermia and cannot move on her own.',name:'Aisha Rahman',contact:'555-0142',reportedAt:M(47),status:'RESCUE IN PROGRESS',team:'T1',shelter:null,joined:2,resources:[{name:'Water Supply',qty:40,unit:'Units'},{name:'Medical Kits',qty:6,unit:'Units'}],timeline:[TL(47,'Emergency reported via citizen SOS'),TL(46,'Priority assessed as CRITICAL'),TL(44,'Command center notified'),TL(40,'Rescue Team Alpha-1 assigned'),TL(36,'Team en route to scene'),TL(18,'Rescue operation started'),TL(12,'40 Units Water Supply allocated'),TL(8,'6 Units Medical Kits allocated')]},
+   {id:'DM-202',type:'Medical Emergency',location:'Hillside Road · Km 4',x:24,y:22,people:2,injuries:'severe',danger:'high',trapped:false,vulnerable:false,desc:'Motorcyclist down on a landslide-debris covered road. Suspected leg fracture, conscious but in significant pain. Bystander reports worsening weather.',name:'Ravi Menon',contact:'555-0177',reportedAt:M(22),status:'EN ROUTE',team:'T2',shelter:null,joined:0,resources:[],timeline:[TL(22,'Emergency reported via citizen SOS'),TL(21,'Priority assessed as HIGH'),TL(19,'Command center notified'),TL(12,'Medical Response Bravo assigned'),TL(6,'Team en route to scene')]},
+   {id:'DM-203',type:'Fire',location:'Market Street · Warehouse 9',x:44,y:58,people:4,injuries:'moderate',danger:'high',trapped:false,vulnerable:false,desc:'Storage warehouse fire, smoke spreading to adjacent shops. Four workers evacuated with smoke inhalation, awaiting medical check.',name:'Ben Okafor',contact:'555-0163',reportedAt:M(15),status:'TEAM ASSIGNED',team:'T3',shelter:null,joined:0,resources:[],timeline:[TL(15,'Emergency reported via citizen report'),TL(14,'Priority assessed as HIGH'),TL(12,'Command center notified'),TL(5,'Fire & Structural Charlie assigned')]},
+   {id:'DM-204',type:'Trapped / Rescue Required',location:'Old Factory Zone · Wing B',x:79,y:64,people:3,injuries:'severe',danger:'extreme',trapped:true,vulnerable:true,desc:'Structural collapse in condemned factory wing. Three people heard under debris, one responding weakly. A child is among the trapped.',name:'Unknown (caller nearby)',contact:'555-0189',reportedAt:M(9),status:'TEAM ASSIGNED',team:'T4',shelter:null,joined:0,resources:[],timeline:[TL(9,'Emergency reported via citizen SOS'),TL(8,'Priority assessed as CRITICAL'),TL(6,'Command center notified'),TL(4,'Urban SAR Delta assigned'),TL(2,'Acoustic sensors deployed (team field update)')]},
+   {id:'DM-205',type:'Flood',location:'Lakeview Apartments · Gate 2',x:33,y:44,people:5,injuries:'minor',danger:'moderate',trapped:false,vulnerable:false,desc:'Rising water in ground-floor parking. Five residents need help moving vehicles and belongings to safety. No injuries so far.',name:'Grace Lin',contact:'555-0155',reportedAt:M(6),status:'UNDER REVIEW',team:null,shelter:null,joined:0,resources:[],timeline:[TL(6,'Emergency reported via citizen report'),TL(5,'Priority assessed as MEDIUM'),TL(4,'Command center notified — queued for review')]},
+   {id:'DM-206',type:'Earthquake Damage',location:'North Bridge · Underpass',x:57,y:15,people:8,injuries:'moderate',danger:'high',trapped:false,vulnerable:false,desc:'Aftershock cracked the underpass support pillar. Eight commuters sheltering nearby, road partially blocked, engineer inspection requested.',name:'City Transit Desk',contact:'555-0121',reportedAt:M(13),status:'PRIORITY ASSESSED',team:null,shelter:null,joined:0,resources:[],timeline:[TL(13,'Emergency reported via citizen report'),TL(12,'Priority assessed as HIGH'),TL(10,'Command center notified')]},
+   {id:'DM-107',type:'Landslide',location:'Hillside Road · Sector 7',x:20,y:34,people:4,injuries:'minor',danger:'moderate',trapped:false,vulnerable:false,desc:'Minor landslide blocked access road. Family of four safely evacuated to Hilltop Sports Complex shelter.',name:'Neighborhood watch',contact:'555-0102',reportedAt:M(240),status:'RESOLVED',team:'T5',shelter:'S3',joined:0,resources:[],timeline:[TL(240,'Emergency reported via citizen report'),TL(238,'Priority assessed as MEDIUM'),TL(230,'Rapid Evacuation Echo assigned'),TL(200,'Team en route to scene'),TL(170,'Rescue operation started'),TL(150,'4 evacuees moved to Hilltop Sports Complex'),TL(145,'Incident resolved — case closed')]},
+   {id:'DM-118',type:'Other',location:'City Center · Plaza',x:48,y:80,people:1,injuries:'none',danger:'low',trapped:false,vulnerable:false,desc:'Elderly resident requested delivery of drinking water and prescription pickup during lockdown of flooded street.',name:'Mr. Havel',contact:'555-0110',reportedAt:M(300),status:'RESOLVED',team:'T6',shelter:null,joined:0,resources:[],timeline:[TL(300,'Emergency reported via citizen report'),TL(290,'Priority assessed as LOW'),TL(180,'Logistics Foxtrot assigned'),TL(120,'Incident resolved — case closed')]}
+  ],
+  teams:[
+   {id:'T1',name:'Rescue Team Alpha-1',spec:'Water Rescue & Evacuation',loc:'Riverside Station',avail:'DEPLOYED',mission:'DM-201',cap:8,x:63,y:37,equip:['Inflatable boats','Life vests','Throw ropes','Sonar']},
+   {id:'T2',name:'Medical Response Bravo',spec:'Emergency Medical',loc:'Central Medicenter',avail:'DEPLOYED',mission:'DM-202',cap:6,x:26,y:25,equip:['Defibrillators','Trauma kits','Stretcher']},
+   {id:'T3',name:'Fire & Structural Charlie',spec:'Fire & Structural Rescue',loc:'Market Firepost',avail:'DEPLOYED',mission:'DM-203',cap:10,x:45,y:60,equip:['Thermal cameras','Breathing apparatus','Hydraulic cutters']},
+   {id:'T4',name:'Urban SAR Delta',spec:'Urban Search & Rescue',loc:'North Depot',avail:'DEPLOYED',mission:'DM-204',cap:12,x:78,y:66,equip:['Concrete saws','Acoustic sensors','Rescue dogs ×2']},
+   {id:'T5',name:'Rescue Team Alpha-2',spec:'Water Rescue & Evacuation',loc:'Riverside Station',avail:'AVAILABLE',mission:null,cap:7,x:40,y:28,equip:['Inflatable boats','Life vests','Pump sets']},
+   {id:'T6',name:'Logistics Foxtrot',spec:'Logistics & Supply',loc:'East Yard',avail:'AVAILABLE',mission:null,cap:9,x:85,y:20,equip:['Trucks ×4','Forklift','Tent sets']}
+  ],
+  shelters:[
+   {id:'S1',name:'Central Community Hub',loc:'14 Grid Avenue',cap:300,occ:214,fac:['Medical Support','Food','Water','Electricity','Accessibility'],x:30,y:72},
+   {id:'S2',name:'Riverside School Shelter',loc:'3 River Road',cap:200,occ:88,fac:['Food','Water','Accessibility'],x:58,y:44},
+   {id:'S3',name:'Hilltop Sports Complex',loc:'90 Summit Boulevard',cap:450,occ:122,fac:['Medical Support','Food','Water','Electricity','Pets corner'],x:18,y:32},
+   {id:'S4',name:'East Community Center',loc:'77 East Avenue',cap:150,occ:150,fac:['Food','Water'],x:82,y:84}
+  ],
+  volunteers:[
+   {id:'V1',name:'Amina Yusuf',skills:['Medical Assistance'],loc:'Central District',avail:'AVAILABLE',incident:null},
+   {id:'V2',name:'Daniel Osei',skills:['Search & Rescue'],loc:'Riverside',avail:'AVAILABLE',incident:null},
+   {id:'V3',name:'Priya Nair',skills:['Food Distribution'],loc:'Market Area',avail:'ASSIGNED',incident:'DM-201'},
+   {id:'V4',name:'Marcus Lee',skills:['Logistics'],loc:'East Yard',avail:'AVAILABLE',incident:null},
+   {id:'V5',name:'Sofia Marin',skills:['Communication'],loc:'City Center',avail:'AVAILABLE',incident:null},
+   {id:'V6',name:'Jacob Otieno',skills:['Shelter Support'],loc:'Riverside',avail:'AVAILABLE',incident:null},
+   {id:'V7',name:'Hana Sato',skills:['Medical Assistance'],loc:'Hillside',avail:'AVAILABLE',incident:null},
+   {id:'V8',name:'Tomas Rivera',skills:['Food Distribution','Logistics'],loc:'Riverside',avail:'ASSIGNED',incident:'DM-201'}
+  ],
+  resources:[
+   {id:'R1',name:'Water Supply',unit:'Units',total:2000,available:1250,allocated:750,crit:400,icon:'droplet'},
+   {id:'R2',name:'Medical Kits',unit:'Units',total:500,available:210,allocated:290,crit:100,icon:'cross'},
+   {id:'R3',name:'Food Rations',unit:'Meals',total:3000,available:1750,allocated:1250,crit:600,icon:'box'},
+   {id:'R4',name:'Rescue Equipment',unit:'Sets',total:120,available:46,allocated:74,crit:30,icon:'zap'},
+   {id:'R5',name:'Shelter Kits',unit:'Units',total:400,available:260,allocated:140,crit:80,icon:'home'},
+   {id:'R6',name:'Emergency Vehicles',unit:'Vehicles',total:45,available:21,allocated:24,crit:8,icon:'truck'}
+  ],
+  alerts:[
+   {id:'A1',level:'CRITICAL ALERT',title:'Critical Flood Warning — Riverside Sector',area:'Riverside Sector',ts:M(25),instructions:'Water levels rising 12 cm/hour along the eastern riverbank. Move to higher ground or the nearest designated shelter immediately. Avoid basement levels.'},
+   {id:'A2',level:'EVACUATION NOTICE',title:'Voluntary Evacuation — Lakeview Lowlands',area:'Lakeview',ts:M(120),instructions:'Residents in low-lying blocks are encouraged to relocate to Riverside School Shelter before nightfall. Transport assistance available on request.'},
+   {id:'A3',level:'WEATHER WARNING',title:'Heavy rainfall continuing through the night',area:'All sectors',ts:M(240),instructions:'Expect localized flooding on low roads. Secure outdoor items and keep emergency kits accessible.'},
+   {id:'A4',level:'SAFETY UPDATE',title:'Boil-water advisory for Market District',area:'Market District',ts:M(360),instructions:'Boil tap water for 3 minutes before drinking until further notice. Bottled water available at shelter distribution points.'}
+  ],
+  notifications:[
+   {id:'N5',type:'info',title:'Resource allocation completed',msg:'40 Units of Water Supply allocated to DM-201.',ts:M(12),read:true},
+   {id:'N4',type:'critical',title:'New CRITICAL emergency reported',msg:'DM-204 — People trapped in Old Factory Zone.',ts:M(9),read:false},
+   {id:'N3',type:'warn',title:'Shelter nearing capacity',msg:'East Community Center has reached FULL capacity.',ts:M(60),read:false},
+   {id:'N2',type:'info',title:'Response team assigned',msg:'Rescue Team Alpha-1 deployed to DM-201.',ts:M(40),read:true},
+   {id:'N1',type:'success',title:'Incident resolved',msg:'DM-107 landslide case closed after evacuation.',ts:M(145),read:true}
+  ],
+  myRequests:[],demo:{running:false,idx:0,done:false}};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function hydrate(inc){
+  if(inc.score==null||isNaN(inc.score)){
+    const d={type:inc.type,people:inc.people||1,injury:inc.injuries,danger:inc.danger,trapped:inc.trapped,vulnerable:inc.vulnerable};
+    inc.score=calcPriority(d).score;
+  }
+  inc.priority=classOf(inc.score);
+  if(!Array.isArray(inc.resources))inc.resources=[];
+  if(!Array.isArray(inc.timeline))inc.timeline=[];
+}
+function normalize(s){(s.incidents||[]).forEach(hydrate);if(!Array.isArray(s.allocLog))s.allocLog=[];if(!Array.isArray(s.myRequests))s.myRequests=[];}
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.v===3){p.demo.running=false;normalize(p);return p;}}}catch(e){}
+  const d=DEFAULT();normalize(d);return d;
+}
+function resetData(){try{localStorage.removeItem(KEY)}catch(e){};location.hash='#/';location.reload();}
+
+/* ---------------- DOMAIN LOGIC ---------------- */
+const classOf=s=>s>=76?'CRITICAL':s>=56?'HIGH':s>=31?'MEDIUM':'LOW';
+function calcPriority(d){
+  const f=[['Base report',18]];
+  const tw={'Medical Emergency':14,'Trapped / Rescue Required':24,'Flood':14,'Fire':20,'Earthquake Damage':17,'Landslide':13,'Other':4};
+  f.push(['Disaster type: '+d.type,tw[d.type]??4]);
+  const inj=d.injuries??d.injury??'none';
+  const iw={severe:['Severe injury reported',20],moderate:['Moderate injury reported',10],minor:['Minor injuries only',4],none:['No injuries reported',0]};
+  f.push(iw[inj]||iw.none);
+  const dw={extreme:['Immediate life-threatening danger',20],high:['High danger level',13],moderate:['Moderate danger level',7],low:['Low danger level',2]};
+  f.push(dw[d.danger]||dw.low);
+  if(d.trapped)f.push(['People trapped on scene',12]);
+  if(d.vulnerable)f.push(['Vulnerable individuals present',8]);
+  f.push([(d.people||1)+' people affected',Math.min(14,Math.ceil((+d.people||1)/2)*2)]);
+  const score=clamp(f.reduce((a,x)=>a+x[1],0),5,100);
+  return {score,factors:f};
+}
+function insights(d,score){
+  const o=[];
+  if(d.danger==='extreme')o.push('Immediate life-threatening danger reported');
+  if(d.trapped)o.push('People trapped — extraction required');
+  if((d.injuries||d.injury)==='severe')o.push('Severe medical condition reported');
+  if(d.vulnerable)o.push('Vulnerable individuals involved (children / elderly)');
+  if((d.people||1)>=5)o.push('Multiple people affected ('+d.people+')');
+  if(['Flood','Fire','Earthquake Damage','Landslide'].includes(d.type))o.push('High-risk disaster type: '+d.type);
+  if(score>=56)o.push('Report aging in queue — response window narrowing');
+  if(!o.length)o.push('Standard assistance request — no immediate life threat');
+  return o;
+}
+const getInc=id=>S.incidents.find(i=>i.id===id);
+const getTeam=id=>S.teams.find(t=>t.id===id);
+const getShelter=id=>S.shelters.find(x=>x.id===id);
+const shelterStatus=sh=>{const p=sh.occ/sh.cap*100;return p>=100?'FULL':p>=80?'NEAR FULL':p>=55?'LIMITED CAPACITY':'AVAILABLE';};
+const resStatus=r=>r.available<r.crit?'CRITICAL':r.available<r.crit*2?'LOW':'SUFFICIENT';
+const activeIncs=()=>S.incidents.filter(i=>i.status!=='RESOLVED');
+function nextStatus(inc){
+  if(inc.status==='RESCUE IN PROGRESS')return inc.shelter?'EVACUATED':'RESOLVED';
+  return FLOW[Math.min(FLOW.indexOf(inc.status)+1,FLOW.length-1)];
+}
+function pushTL(inc,label){inc.timeline.push({ts:Date.now(),label});}
+function notif(type,title,msg){
+  S.notifications.unshift({id:'N'+Date.now()+Math.floor(Math.random()*99),type,title,msg,ts:Date.now(),read:false});
+  if(S.notifications.length>40)S.notifications.length=40;
+  save();
+}
+function createIncident(d,opts={}){
+  const id='DM-'+(S.seq++);
+  const {score}=calcPriority(d);
+  const inc={id,type:d.type,location:d.location,x:d.x||clamp(20+Math.random()*60,15,85),y:d.y||clamp(18+Math.random()*60,15,85),
+    people:+d.people||1,injuries:d.injuries||'none',danger:d.danger||'low',trapped:!!d.trapped,vulnerable:!!d.vulnerable,
+    desc:d.desc||'',name:d.name||'Citizen',contact:d.contact||'—',reportedAt:Date.now(),status:'RECEIVED',
+    team:null,shelter:null,joined:0,resources:[],priority:classOf(score),score,
+    timeline:[{ts:Date.now(),label:'Emergency reported via citizen '+(d.mode==='report'?'report':'SOS')}]};
+  S.incidents.unshift(inc);
+  if(opts.mine!==false)S.myRequests.unshift(id);
+  notif(score>=76?'critical':'info','New '+classOf(score)+' emergency reported',id+' — '+d.type+' at '+d.location+'.');
+  save();return inc;
+}
+function assignTeam(incId,teamId){
+  const inc=getInc(incId),t=getTeam(teamId);if(!inc||!t)return;
+  inc.team=teamId;inc.status='TEAM ASSIGNED';t.avail='DEPLOYED';t.mission=incId;
+  pushTL(inc,t.name+' assigned');
+  notif('info','Response team assigned',t.name+' deployed to '+incId+'.');
+  save();
+}
+function citizenMsg(st,inc){
+  return {'UNDER REVIEW':'Your request is now under review by the command center.','PRIORITY ASSESSED':'Priority confirmed: '+inc.priority+'. You are in the response queue.','TEAM ASSIGNED':(getTeam(inc.team)?.name||'A response team')+' has been assigned to you.','EN ROUTE':'Your response team is en route. Stay where you are if safe to do so.','RESCUE IN PROGRESS':'Rescue operation is in progress at your location.','EVACUATED':'You have been evacuated to '+(getShelter(inc.shelter)?.name||'a shelter')+'.','RESOLVED':'You are safe. Your request has been resolved.'}[st]||('Status changed to '+st+'.');
+}
+function setStatus(incId,st){
+  const inc=getInc(incId);if(!inc||inc.status===st)return;
+  inc.status=st;pushTL(inc,STATUS_TL[st]||('Status changed to '+st));
+  if(st==='RESOLVED'){
+    if(inc.team){const t=getTeam(inc.team);if(t){t.avail='AVAILABLE';t.mission=null;}}
+    S.resolvedToday++;S.week[6]++;
+    notif('success','Incident resolved',incId+' closed. Response loop complete — team released.');
+  }else{
+    const kind=st==='EN ROUTE'||st==='RESCUE IN PROGRESS'?'info':st==='EVACUATED'?'success':'info';
+    notif(kind,'Request '+incId+' updated',citizenMsg(st,inc));
+  }
+  save();
+}
+function allocateResource(incId,resId,qty){
+  const r=S.resources.find(x=>x.id===resId),inc=getInc(incId);if(!r||!inc||qty<1)return false;
+  qty=Math.min(qty,r.available);if(qty<1)return false;
+  r.available-=qty;r.allocated+=qty;
+  inc.resources.push({name:r.name,qty,unit:r.unit});
+  pushTL(inc,qty+' '+r.unit+' '+r.name+' allocated');
+  S.allocLog.unshift({ts:Date.now(),txt:qty+' '+r.unit+' '+r.name+' → '+incId});
+  if(S.allocLog.length>30)S.allocLog.length=30;
+  notif('info','Resources allocated',qty+' '+r.unit+' of '+r.name+' sent to '+incId+'.');
+  if(resStatus(r)!=='SUFFICIENT')notif('warn','Resource inventory '+resStatus(r).toLowerCase(),r.name+' available: '+r.available+' '+r.unit+'.');
+  save();return true;
+}
+function assignEvacuees(shelterId,n,incId){
+  const sh=getShelter(shelterId);if(!sh||n<1)return false;
+  if(sh.occ+n>sh.cap){toast('Not enough space — only '+(sh.cap-sh.occ)+' places free.','t-red');return false;}
+  sh.occ+=n;
+  if(incId){const inc=getInc(incId);if(inc){inc.shelter=shelterId;pushTL(inc,n+' evacuees moved to '+sh.name);}}
+  const st=shelterStatus(sh);
+  notif(st==='NEAR FULL'||st==='FULL'?'warn':'success','Shelter occupancy updated',sh.name+' now at '+sh.occ+'/'+sh.cap+' ('+st+').');
+  save();return true;
+}
+function joinResponse(volId,incId){
+  const v=S.volunteers.find(x=>x.id===volId),inc=getInc(incId);if(!v||!inc||v.avail!=='AVAILABLE')return false;
+  v.avail='ASSIGNED';v.incident=incId;inc.joined=(inc.joined||0)+1;
+  pushTL(inc,'Volunteer '+v.name+' joined response');
+  notif('success','Volunteer joined response',v.name+' assigned to '+incId+'.');
+  save();return true;
+}
+function escalate(incId){
+  const inc=getInc(incId);if(!inc||inc.status==='RESOLVED')return;
+  inc.score=clamp(inc.score+12,5,100);inc.priority=classOf(inc.score);
+  pushTL(inc,'Incident escalated by command center — priority now '+inc.priority);
+  notif('critical','Incident escalated',incId+' escalated to '+inc.priority+' (score '+inc.score+').');
+  save();
+}
+
+/* ---------------- SHARED UI ---------------- */
+const badge=(t,c)=>`<span class="badge b-${c}"><i></i>${t}</span>`;
+const pBadge=p=>badge(p,{'CRITICAL':'red','HIGH':'orange','MEDIUM':'yellow','LOW':'blue'}[p]||'muted');
+const sBadge=s=>badge(s,STATUS_COLOR[s]||'muted');
+const bar=(pct,color,tick)=>`<div class="bar"><i style="width:${clamp(pct,0,100)}%;background:var(--${color})"></i>${tick!=null?`<b class="tick" style="left:${tick}%"></b>`:''}</div>`;
+const typeIcon=(t,s=17)=>ico(TYPE_ICON[t]||'alert',s);
+function stat(label,val,icon,color,suffix){
+  return `<div class="card stat" data-anim><div class="stat-ic c-${color}">${ico(icon,19)}</div><div><div class="stat-v"><span data-count="${val}">0</span>${suffix||''}</div><div class="stat-l mono">${label}</div></div></div>`;
+}
+function pageIn(root=document){
+  ani({targets:$$('[data-anim]',root),opacity:[0,1],translateY:[16,0],duration:520,delay:anime.stagger(42),easing:'easeOutQuad'});
+}
+function counters(root=document){
+  $$('[data-count]',root).forEach(el=>{
+    const v=+el.dataset.count,c=+el.dataset.cur||0;el.dataset.cur=v;
+    ani({targets:el,innerText:[c,v],round:1,duration:900,easing:'easeOutExpo',delay:150});
+  });
+}
+function openModal(html){
+  closeModal(true);
+  const ov=document.createElement('div');ov.className='modal-ov';ov.id='modalOv';
+  ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal();});
+  ani({targets:ov,opacity:[0,1],duration:200,easing:'linear'});
+  ani({targets:ov.firstElementChild,scale:[.95,1],opacity:[0,1],translateY:[10,0],duration:300,easing:'easeOutCubic'});
+}
+function closeModal(instant){
+  const ov=document.getElementById('modalOv');if(!ov)return;
+  if(instant){ov.remove();return;}
+  ani({targets:ov,opacity:0,duration:180,easing:'linear',complete:()=>ov.remove()});
+}
+function toast(msg,type='t-blue',ms=2600){
+  const t=document.createElement('div');t.className='toast '+type;t.innerHTML=msg;
+  $('#toasts').appendChild(t);
+  ani({targets:t,opacity:[0,1],translateY:[12,0],duration:300,easing:'easeOutCubic'});
+  setTimeout(()=>ani({targets:t,opacity:0,translateY:[0,8],duration:250,easing:'linear',complete:()=>t.remove()}),ms);
+}
+function openDrawer(){
+  closeDrawer(true);
+  const ov=document.createElement('div');ov.className='drawer-ov';ov.id='drawerOv';ov.onclick=()=>closeDrawer();
+  const d=document.createElement('div');d.className='drawer';d.id='drawer';d.setAttribute('role','dialog');
+  d.innerHTML=drawerHTML();
+  document.body.append(ov,d);
+  ani({targets:ov,opacity:[0,1],duration:200,easing:'linear'});
+  ani({targets:d,translateX:['105%',0],duration:340,easing:'easeOutCubic'});
+  ani({targets:$$('#drawer .notif-item'),opacity:[0,1],translateX:[24,0],duration:320,delay:anime.stagger(45,{start:120}),easing:'easeOutCubic'});
+}
+function closeDrawer(instant){
+  const d=$('#drawer');if(!d)return;
+  if(instant){d.remove();const o=$('#drawerOv');if(o)o.remove();return;}
+  ani({targets:d,translateX:'105%',duration:260,easing:'easeInCubic',complete:()=>{d.remove();const o=$('#drawerOv');if(o)o.remove();}});
+}
+function drawerHTML(){
+  const items=S.notifications;
+  return `<div class="dh"><div><h3 style="font-size:17px">Notifications</h3><div class="mono" style="font-size:11px;color:var(--faint);margin-top:2px">${items.filter(n=>!n.read).length} UNREAD · LIVE FEED</div></div>
+  <button class="btn btn-ic btn-ghost" data-act="closeDrawer" aria-label="Close">${ico('x')}</button></div>
+  <div class="db">${items.length?items.map(n=>`
+    <div class="notif-item ${n.read?'':'unread'}" data-act="markRead" data-id="${n.id}">
+      <div class="stat-ic c-${n.type==='critical'?'red':n.type==='warn'?'orange':n.type==='success'?'green':'blue'}" style="width:32px;height:32px;border-radius:9px">${ico(n.type==='critical'||n.type==='warn'?'alert':n.type==='success'?'check':'bell',15)}</div>
+      <div><div class="nt">${esc(n.title)}</div><div class="nm">${esc(n.msg)}</div><div class="nts">${ago(n.ts)}</div></div>
+    </div>`).join(''):`<div class="empty"><div class="ic">${ico('bell',22)}</div>You're all caught up.<br><span class="faint" style="font-size:12.5px">No unread notifications.</span></div>`}</div>
+  <div class="df"><button class="btn sm" data-act="markAllRead" style="flex:1">${ico('check',14)} Mark all read</button><button class="btn sm btn-ghost" data-act="clearNotifs" style="flex:1">${ico('x',14)} Clear all</button></div>`;
+}
+function updateBell(){
+  const b=$('#bellN');if(b)b.textContent=S.notifications.filter(n=>!n.read).length||'';
+}
+
+/* ---------------- MAP ---------------- */
+const ZONES=[
+ {n:'RIVERSIDE SECTOR',x:50,y:18,w:36,h:32,c:'rgba(255,77,94,.06)',b:'rgba(255,77,94,.35)'},
+ {n:'HILLSIDE',x:9,y:10,w:27,h:28,c:'rgba(255,154,61,.05)',b:'rgba(255,154,61,.3)'},
+ {n:'MARKET DISTRICT',x:29,y:48,w:31,h:28,c:'rgba(255,201,77,.045)',b:'rgba(255,201,77,.26)'},
+ {n:'NORTH BRIDGE',x:45,y:5,w:28,h:13,c:'rgba(77,159,255,.055)',b:'rgba(77,159,255,.3)'}];
+function mapHTML(h=460){
+  const marks=
+    S.incidents.filter(i=>i.status!=='RESOLVED').map(i=>`
+      <button class="mk inc ${i.priority==='CRITICAL'?'crit':''} ${UI.sel===i.id?'sel':''}" data-act="selInc" data-id="${i.id}" style="left:${i.x}%;top:${i.y}%" aria-label="Incident ${i.id}">
+        <span class="dot ${i.priority==='CRITICAL'?'crit':i.priority==='HIGH'?'high':i.priority==='MEDIUM'?'med':'low'}"></span>
+        <span class="mlab">${i.id}</span>
+      </button>`).join('')+
+    S.teams.map(t=>`<button class="mk team ${UI.sel&&getInc(UI.sel)?.team===t.id?'sel':''}" data-act="selTeam" data-id="${t.id}" style="left:${t.x}%;top:${t.y}%" aria-label="${esc(t.name)}"><span class="dot"></span></button>`).join('')+
+    S.shelters.map(sh=>`<button class="mk shelt" data-act="selShelter" data-id="${sh.id}" style="left:${sh.x}%;top:${sh.y}%" aria-label="${esc(sh.name)}"><span class="dot"></span></button>`).join('');
+  return `<div class="opmap" style="min-height:${h}px">
+    <div class="gridbg"></div>
+    <svg class="river" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M78,-2 C70,22 58,34 56,52 C54,70 42,84 40,102" fill="none" stroke="rgba(77,159,255,.14)" stroke-width="5.5"/>
+      <path d="M78,-2 C70,22 58,34 56,52 C54,70 42,84 40,102" fill="none" stroke="rgba(77,159,255,.35)" stroke-width=".45" stroke-dasharray="2 1.6"/>
+    </svg>
+    ${ZONES.map(z=>`<div class="map-zone" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;background:${z.c};border-color:${z.b};color:${z.b}">${z.n}</div>`).join('')}
+    <div class="maptop"><span>OPERATIONAL GRID · SECTOR VIEW</span><span style="display:flex;gap:7px;align-items:center"><i class="live-dot"></i>LIVE · SCALE 2 KM</span></div>
+    ${marks}
+    <div class="map-legend">
+      <span><i style="background:var(--red)"></i>Critical</span><span><i style="background:var(--orange)"></i>High</span><span><i style="background:var(--yellow)"></i>Medium</span>
+      <span><i style="background:var(--blue);border-radius:2px"></i>Team</span><span><i style="background:var(--green)"></i>Shelter</span>
+    </div>
+  </div>`;
+}
+function selectIncident(id){
+  UI.sel=id;
+  $$('.mk.inc').forEach(m=>m.classList.toggle('sel',m.dataset.id===id));
+  const p=$('#selPanel');if(!p)return;
+  p.innerHTML=selPanelHTML();
+  ani({targets:p.firstElementChild||p,opacity:[0,1],translateY:[10,0],duration:340,easing:'easeOutCubic'});
+}
+
+/* ---------------- PANELS ---------------- */
+function incActions(inc){
+  if(inc.status==='RESOLVED')return `<div class="muted" style="font-size:13px;display:flex;gap:8px;align-items:center">${ico('check',15)} Closed-loop complete — case archived.</div>`;
+  const ns=nextStatus(inc);
+  const canAdvance=!!inc.team||['RECEIVED','UNDER REVIEW'].includes(inc.status);
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap">
+    ${!inc.team?`<button class="btn sm btn-primary" data-act="assignOpen" data-id="${inc.id}">${ico('helmet',14)} Assign Team</button>`:''}
+    <button class="btn sm" data-act="allocOpen" data-id="${inc.id}">${ico('box',14)} Allocate Resources</button>
+    <button class="btn sm" data-act="shelterOpen" data-id="${inc.id}">${ico('home',14)} ${inc.shelter?'Change Shelter':'Assign Shelter'}</button>
+    <button class="btn sm btn-ghost" data-act="escalate" data-id="${inc.id}">${ico('zap',14)} Escalate</button>
+    ${canAdvance?`<button class="btn sm" data-act="advStatus" data-id="${inc.id}">${ico('arrowR',14)} Advance → ${ns}</button>`:''}
+    <button class="btn sm btn-green" data-act="resolve" data-id="${inc.id}">${ico('check',14)} Mark Resolved</button>
+  </div>`;
+}
+function incPanel(inc){
+  const t=inc.team?getTeam(inc.team):null,sh=inc.shelter?getShelter(inc.shelter):null;
+  return `<div class="card" style="padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div><span class="mono" style="font-size:12.5px;font-weight:600">${inc.id}</span>
+      <div style="font-weight:700;margin-top:2px;display:flex;gap:8px;align-items:center">${typeIcon(inc.type,15)} ${esc(inc.type)}</div></div>
+      <button class="btn btn-ic btn-ghost sm" data-act="deselInc" aria-label="Back to queue">${ico('x',14)}</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">${pBadge(inc.priority)} ${sBadge(inc.status)} <span class="badge b-muted mono">SCORE ${inc.score}</span></div>
+    <div class="kv"><span class="k">Location</span><span class="v">${esc(inc.location)}</span></div>
+    <div class="kv"><span class="k">People affected</span><span class="v">${inc.people}</span></div>
+    <div class="kv"><span class="k">Reported</span><span class="v mono">${ago(inc.reportedAt)}</span></div>
+    <div class="kv"><span class="k">Team</span><span class="v">${t?esc(t.name):'<span class="faint">Unassigned</span>'}</span></div>
+    ${sh?`<div class="kv"><span class="k">Shelter</span><span class="v">${esc(sh.name)}</span></div>`:''}
+    <div style="margin-top:14px">${incActions(inc)}</div>
+    <button class="btn sm btn-ghost" data-act="go" data-to="/incident/${inc.id}" style="margin-top:10px;width:100%">${ico('eye',14)} View full details</button>
+  </div>`;
+}
+function queueHTML(){
+  const list=activeIncs().sort((a,b)=>b.score-a.score).slice(0,6);
+  if(!list.length)return `<div class="empty" style="padding:28px"><div class="ic">${ico('check',20)}</div>No active incidents in this region.</div>`;
+  return list.map(i=>`<div class="queue-item ${UI.sel===i.id?'sel':''}" data-act="selInc" data-id="${i.id}">
+    <div class="stat-ic c-${i.priority==='CRITICAL'?'red':i.priority==='HIGH'?'orange':i.priority==='MEDIUM'?'yellow':'blue'}" style="width:34px;height:34px;border-radius:9px">${typeIcon(i.type,15)}</div>
+    <div style="flex:1;min-width:0"><div class="qid">${i.id} · ${esc(i.type)}</div><div class="ql">${esc(i.location)} · ${ago(i.reportedAt)}</div></div>
+    <div class="qs" style="color:var(--${i.priority==='CRITICAL'?'red':i.priority==='HIGH'?'orange':'yellow'})">${i.score}</div>
+  </div>`).join('');
+}
+function selPanelHTML(){
+  if(!UI.sel)return `<div><div class="mini-h">PRIORITY QUEUE · BY SCORE</div><div id="queueList">${queueHTML()}</div></div>`;
+  const inc=getInc(UI.sel);
+  if(!inc){UI.sel=null;return selPanelHTML();}
+  return incPanel(inc);
+}
+
+/* ---------------- VIEWS ---------------- */
+function heroHub(){
+  const nodes=[['CITIZEN',105,92,'blue'],['AUTHORITY',415,92,'yellow'],['RESCUE TEAM',415,388,'red'],['SHELTER',105,388,'green'],['VOLUNTEER',52,240,'teal'],['RESOURCES',468,240,'orange']];
+  return `<svg id="hubSvg" viewBox="0 0 520 480" aria-hidden="true">
+    ${nodes.map(n=>`<line x1="260" y1="240" x2="${n[1]}" y2="${n[2]}" stroke="rgba(147,162,192,.28)" stroke-width="1.2"/>`).join('')}
+    <circle cx="260" cy="240" r="86" fill="rgba(47,214,163,.05)" stroke="rgba(47,214,163,.4)" stroke-width="1.2" stroke-dasharray="4 5"/>
+    <circle cx="260" cy="240" r="58" fill="#111A2C" stroke="rgba(47,214,163,.6)" stroke-width="1.4"/>
+    <text x="260" y="232" text-anchor="middle" fill="#E9EFFA" font-family="Space Grotesk" font-weight="700" font-size="14">SMART</text>
+    <text x="260" y="250" text-anchor="middle" fill="#7AE8C6" font-family="Space Grotesk" font-weight="700" font-size="14">RESPONSE</text>
+    <text x="260" y="266" text-anchor="middle" fill="#5C6D8E" font-family="JetBrains Mono" font-size="8.5" letter-spacing="2">PLATFORM</text>
+    ${nodes.map(n=>`<g class="hn"><g class="hn-f"><circle cx="${n[1]}" cy="${n[2]}" r="24" fill="#111A2C" stroke="var(--${n[3]})" stroke-width="1.4" opacity=".95"/>
+    <circle cx="${n[1]}" cy="${n[2]}" r="6" fill="var(--${n[3]})"/>
+    <text x="${n[1]}" y="${n[2]+42}" text-anchor="middle" fill="#93A2C0" font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">${n[0]}</text></g></g>`).join('')}
+  </svg>`;
+}
+const viewLanding=()=>`
+<div class="land">
+  <nav class="land-nav">
+    <div class="brand"><span class="brand-mark">${ico('loop',18)}</span>SafeLoop</div>
+    <div class="land-links"><span data-act="scrollTo" data-to="sec-problem">The Problem</span><span data-act="scrollTo" data-to="sec-how">How it works</span><span data-act="scrollTo" data-to="sec-usp">Closed Loop</span><span data-act="go" data-to="/roles">Roles</span></div>
+    <button class="btn btn-primary sm" data-act="go" data-to="/roles">Launch Platform ${ico('arrowR',14)}</button>
+  </nav>
+  <header class="hero">
+    <div class="hero-copy" data-anim>
+      <div class="hero-badge"><i></i>SMART INTEGRATED DISASTER RESPONSE PLATFORM</div>
+      <h1 class="hero-h">From SOS<br>to <em>Safe.</em></h1>
+      <p class="hero-sub">One connected platform for intelligent, coordinated and transparent disaster response.</p>
+      <p class="hero-support">Connecting citizens, emergency authorities, rescue teams, volunteers, shelters and resources through a closed-loop disaster response ecosystem.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary lg" data-act="go" data-to="/roles">Explore Platform ${ico('arrowR',16)}</button>
+        <button class="btn btn-danger lg" data-act="go" data-to="/sos">${ico('siren',16)} Emergency SOS</button>
+      </div>
+      <div class="hero-meta mono">INTERACTIVE PROTOTYPE · FULLY FUNCTIONAL · NO BACKEND REQUIRED</div>
+    </div>
+    <div class="hero-viz" data-anim>${heroHub()}</div>
+  </header>
+
+  <section class="land-sec" id="sec-problem">
+    <div class="sec-kicker">THE PROBLEM</div>
+    <h2 class="sec-title" data-anim>Reporting is easy. <span style="color:var(--red)">Everything after that breaks down.</span></h2>
+    <p class="sec-sub" data-anim>In a real disaster, information fragments between victims, call centers, teams and shelters. Nobody can see the full picture — and victims are left in silence.</p>
+    <div class="chain broken" data-anim>
+      ${[['clip','Citizen Report'],['phone','Multiple Calls'],['clock','Communication Delays'],['users','Unclear Responsibility'],['box','Resource Confusion'],['eye','No Status Visibility']].map(s=>`
+      <div class="chain-item"><div class="ci">${ico(s[0],18)}</div><div class="cn">FRAGMENTED</div><div class="ct">${s[1]}</div><span class="chain-conn">${ico('x',13)}</span></div>`).join('')}
+    </div>
+  </section>
+
+  <section class="land-sec" id="sec-how">
+    <div class="sec-kicker ok">OUR PLATFORM</div>
+    <h2 class="sec-title" data-anim>One connected chain, from the first report to final resolution.</h2>
+    <p class="sec-sub" data-anim>Every request flows through a single coordinated pipeline — visible to every stakeholder at every step.</p>
+    <div class="chain okc" data-anim>
+      ${[['send','Report'],['zap','Prioritize'],['radio','Coordinate'],['helmet','Assign'],['eye','Track'],['check','Resolve']].map(s=>`
+      <div class="chain-item"><div class="ci">${ico(s[0],18)}</div><div class="cn">STAGE</div><div class="ct">${s[1]}</div><span class="chain-conn">${ico('arrowR',13)}</span></div>`).join('')}
+    </div>
+    <div class="usp-band" id="sec-usp" data-anim>
+      <div class="loop-visual">
+        <svg viewBox="0 0 180 180"><circle cx="90" cy="90" r="80" fill="none" stroke="rgba(47,214,163,.25)" stroke-width="2"/>
+        <circle class="loopRing" cx="90" cy="90" r="80" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="120 380"/></svg>
+        <div style="text-align:center">${ico('loop',30)}<div class="loop-word">CLOSED</div><div class="loop-word">LOOP</div></div>
+      </div>
+      <div>
+        <div class="sec-kicker ok" style="margin-bottom:8px">CORE USP</div>
+        <h2 class="sec-title" style="margin-bottom:10px">CLOSED-LOOP RESPONSE</h2>
+        <p class="sec-sub" style="margin-bottom:0">A request is not simply received. It stays visible — prioritized, assigned, tracked and supported — until the person behind it is <b style="color:var(--green)">safe</b>. No case closes before resolution.</p>
+      </div>
+    </div>
+    <div class="usp-grid" data-anim>
+      ${[['loop','Closed-Loop Response','Every emergency is tracked from reporting until resolution.'],
+      ['users','Multi-Stakeholder Ecosystem','Citizens, authorities, teams, volunteers and shelters act on one shared state.'],
+      ['zap','Intelligent Prioritization','A transparent priority engine scores every request with decision-support insights.'],
+      ['box','Resource Visibility','Live view of teams, shelters, vehicles and supplies — before they are needed.'],
+      ['eye','Transparent Status Tracking','Citizens see every stage: received, reviewed, assigned, en route, rescued, safe.'],
+      ['shield','Single Source of Truth','One coordinated interface replaces fragmented calls and disconnected channels.']].map(u=>`
+      <div class="usp-point"><span class="stat-ic c-green" style="width:34px;height:34px;margin-bottom:10px">${ico(u[0],16)}</span><b>${u[1]}</b><span>${u[2]}</span></div>`).join('')}
+    </div>
+  </section>
+
+  <section class="land-sec">
+    <div class="sec-kicker">RESPONSE LIFECYCLE</div>
+    <h2 class="sec-title" data-anim>The complete loop, end to end.</h2>
+    <div class="cycle" data-anim>
+      ${['DISASTER DETECTED','INFO COLLECTED','SEVERITY ASSESSED','COMMAND DASHBOARD','TEAM IDENTIFIED','TEAM ASSIGNED','LIVE TRACKING','RESCUE / EVACUATE','SHELTER SUPPORT','CASE RESOLVED'].map((s,i)=>`
+      <div class="cycle-step"><div class="cn">STEP ${i+1}</div><div class="ct">${s}</div></div>`).join('')}
+    </div>
+    <div class="stake-grid" data-anim>
+      ${[['users','Citizens','Report & track'],['shield','Authorities','Command & coordinate'],['helmet','Rescue Teams','Respond & update'],['heart','Volunteers','Offer skills'],['home','Shelters','Host evacuees'],['box','Resources','Supply the loop']].map(s=>`
+      <div class="stake"><div class="si c-blue">${ico(s[0],18)}</div><b>${s[1]}</b><span>${s[2]}</span></div>`).join('')}
+    </div>
+  </section>
+
+  <footer class="footer-land">
+    <div class="brand" style="font-size:16px"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+    <div class="muted" style="font-size:13.5px">"Disaster response should not end when an emergency is reported."</div>
+    <div class="mono faint" style="font-size:11px">PROTOTYPE V1.0 · FRONTEND-ONLY SIMULATION</div>
+  </footer>
+</div>`;
+
+const viewRoles=()=>`
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <nav class="land-nav"><div class="brand"><span class="brand-mark">${ico('loop',18)}</span>SafeLoop</div>
+  <span class="muted" style="font-size:13.5px">Select your role to enter the ecosystem</span>
+  <button class="btn btn-ghost sm" data-act="go" data-to="/">Back</button></nav>
+  <div style="max-width:1100px;margin:0 auto;padding:56px 5vw 80px;width:100%">
+    <div class="sec-kicker ok" data-anim>ROLE SELECTION</div>
+    <h2 class="sec-title" data-anim>Who are you in the response loop?</h2>
+    <p class="sec-sub" data-anim>Each role sees the same connected data from a different operational perspective. No login needed for this prototype.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+      ${[
+      ['users','citizen','Citizen','Report emergencies, send SOS alerts and track your assistance in real time.','blue'],
+      ['shield','command','Command Center','Monitor incidents, prioritize emergencies and coordinate the full response.','red'],
+      ['helmet','team','Rescue Team','View assigned missions and update your operational status from the field.','orange'],
+      ['heart','volunteer','Volunteer','View open response needs and offer your available assistance.','teal'],
+      ['home','shelter','Shelter Coordinator','Manage capacity, occupancy and incoming evacuees.','green']].map(r=>`
+      <button class="card hov" data-act="pickRole" data-role="${r[1]}" style="text-align:left;cursor:pointer;color:var(--text)" data-anim>
+        <div class="stat-ic c-${r[4]}" style="width:46px;height:46px;margin-bottom:14px">${ico(r[0],21)}</div>
+        <h3 style="font-size:18px;margin-bottom:6px">${r[2]}</h3>
+        <p class="muted" style="font-size:13.5px;margin-bottom:14px">${r[3]}</p>
+        <span style="color:var(--${r[4]});font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;gap:6px">Enter as ${r[2]} ${ico('arrowR',14)}</span>
+      </button>`).join('')}
+    </div>
+  </div>
+</div>`;
+
+function myActiveReq(){
+  if(!S.myRequests.length)return null;
+  for(const id of S.myRequests){const inc=getInc(id);if(inc&&inc.status!=='RESOLVED')return inc;}
+  return getInc(S.myRequests[0]);
+}
+function miniStages(inc){
+  const idx=STAGE_IDX[inc.status]??0;
+  let h='<div class="mini-stages">';
+  for(let i=0;i<7;i++){h+=i>0?'<s class="'+(i<=idx?'on':'')+'"></s>':'';h+=`<b class="${i<idx?'on':i===idx?'cur':''}"></b>`;}
+  return h+'</div>';
+}
+function citizenNav(active){
+  return `<div class="cit-top">
+  <div class="brand" style="font-size:16px;cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+  <div class="cit-links">
+    <span class="cit-link ${active==='home'?'active':''}" data-act="go" data-to="/citizen">Home</span>
+    <span class="cit-link ${active==='track'?'active':''}" data-act="go" data-to="/track">Track Request</span>
+    <span class="cit-link ${active==='shelters'?'active':''}" data-act="go" data-to="/shelters">Shelters</span>
+    <span class="cit-link ${active==='alerts'?'active':''}" data-act="go" data-to="/alerts">Alerts</span>
+  </div>
+  <div style="margin-left:auto"><button class="btn sm btn-ghost" data-act="go" data-to="/roles">${ico('swap',14)} Switch Role</button></div>
+</div>`;
+}
+const viewCitizen=()=>{
+  const hr=new Date().getHours(),greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const mine=myActiveReq();
+  return citizenNav('home')+`
+<div class="cit-main">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:26px" data-anim>
+    <div><h2 style="font-size:26px">${greet}, Neighbor</h2>
+    <div class="muted" style="display:flex;gap:8px;align-items:center;margin-top:5px;font-size:14px">${ico('pin',15)} Riverside District · ${new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})}</div></div>
+    <span class="badge b-green"><i></i>SYSTEM OPERATIONAL</span>
+  </div>
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;margin-bottom:18px" class="cit-hero">
+    <div class="card" style="text-align:center;padding:26px 20px" data-anim>
+      <button class="sos-core-btn" data-act="go" data-to="/sos" aria-label="Send emergency SOS">
+        <span class="sos-ring"></span><span class="sos-ring r2"></span>
+        <span class="sos-btn-in">${ico('siren',30)}SOS</span>
+      </button>
+      <div style="font-weight:700;font-size:16px">Emergency SOS</div>
+      <p class="muted" style="font-size:13px;margin-top:6px">Immediate help. Assessed, dispatched and tracked until you are safe.</p>
+    </div>
+    <div class="col-stack" data-anim>
+      ${mine?`<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div><div class="mini-h">MY ACTIVE REQUEST</div>
+          <div style="font-weight:700;font-size:16px" class="mono">${mine.id} · ${esc(mine.type)}</div></div>
+          ${sBadge(mine.status)}
+        </div>
+        ${miniStages(mine)}
+        <div class="muted" style="font-size:13px">${mine.team? 'Team: '+esc(getTeam(mine.team)?.name||'—'):'Awaiting team assignment'} · reported ${ago(mine.reportedAt)}</div>
+        <button class="btn sm btn-primary" data-act="go" data-to="/track" style="margin-top:12px">${ico('eye',14)} Open live tracking</button>
+      </div>`:`<div class="card"><div class="mini-h">MY REQUESTS</div>
+        <div style="display:flex;gap:14px;align-items:center;color:var(--muted);font-size:14px">${ico('check',20)} No active requests. You can send an SOS any time — you'll see live status here.</div></div>`}
+      <div class="card"><div class="mini-h">QUICK ACTIONS</div>
+        <div class="quick" style="grid-template-columns:1fr 1fr">
+          ${[['clip','Report Incident','Report a non-life-threatening situation','/sos','blue'],
+          ['home','Find Nearby Shelter','Check capacity before you travel','/shelters','green'],
+          ['alert','View Alerts','Active warnings for your area','/alerts','orange'],
+          ['eye','Track My Request','Follow your case to resolution','/track','teal']].map(q=>`
+          <button class="qc" data-act="go" data-to="${q[3]}"><div class="qi c-${q[4]}">${ico(q[0],18)}</div><div><b style="font-size:14px">${q[1]}</b><div class="muted" style="font-size:12px">${q[2]}</div></div></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px" class="cit-two">
+    <div class="card" data-anim><div class="mini-h">ACTIVE LOCAL ALERTS · RIVERSIDE DISTRICT</div>
+      ${S.alerts.slice(0,3).map(a=>`<div class="alert-item" style="border-left-color:var(--${a.level==='CRITICAL ALERT'?'red':a.level==='EVACUATION NOTICE'?'orange':a.level==='WEATHER WARNING'?'yellow':'blue'})">
+        <h4>${esc(a.title)} ${badge(a.level,a.level==='CRITICAL ALERT'?'red':a.level==='EVACUATION NOTICE'?'orange':a.level==='WEATHER WARNING'?'yellow':'blue')}</h4>
+        <p>${esc(a.instructions)}</p></div>`).join('')}
+      <button class="btn sm btn-ghost" data-act="go" data-to="/alerts" style="margin-top:6px">View all alerts ${ico('arrowR',13)}</button>
+    </div>
+    <div class="col-stack" data-anim>
+      <div class="card"><div class="mini-h">NEARBY SHELTERS</div>
+        ${S.shelters.slice(0,3).map(sh=>{const p=Math.round(sh.occ/sh.cap*100),st=shelterStatus(sh);return `
+        <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px"><b>${esc(sh.name)}</b>${sBadge(st)}</div>
+        ${bar(p,p>=100?'red':p>=80?'orange':p>=55?'yellow':'green')}<div class="faint mono" style="font-size:11px;margin-top:4px">${sh.occ}/${sh.cap} · ${sh.cap-sh.occ} spaces · ${esc(sh.loc)}</div></div>`;}).join('')}
+      </div>
+      <div class="card"><div class="mini-h">EMERGENCY CONTACTS</div>
+        ${[['911 / 112','Emergency Services'],['0800-555-0199','Flood Hotline'],['0800-555-0344','Medical Helpline'],['0800-555-0777','Non-Emergency Line']].map(c=>`
+        <div class="contact-row"><span class="muted">${c[1]}</span><a class="mono" href="tel:${c[0]}" style="font-weight:600">${c[0]}</a></div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>
+<style>@media(max-width:920px){.cit-hero,.cit-two{grid-template-columns:1fr!important}}</style>`;
+};
+
+const viewSOS=()=>{
+  const st=UI.sos;
+  const dots=['Type','Details','Assessment','Confirm'];
+  let body='';
+  if(st.step===1){
+    body=`<h3 style="font-size:21px">Do you need immediate emergency assistance?</h3>
+    <p class="msub">Select the emergency category. This drives the priority assessment.</p>
+    <div class="cat-grid">
+      ${['Medical Emergency','Trapped / Rescue Required','Flood','Fire','Earthquake Damage','Landslide','Other'].map(c=>`
+      <div class="cat ${st.type===c?'sel':''}" data-act="sosPick" data-id="${c}" role="button" tabindex="0"><div class="ci">${typeIcon(c,24)}</div>${c}</div>`).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:22px">
+      <button class="btn btn-ghost" data-act="go" data-to="/citizen">${ico('x',14)} Cancel</button>
+      <button class="btn btn-danger" data-act="sosNext" ${st.type?'':'disabled'}>Continue ${ico('arrowR',14)}</button>
+    </div>`;
+  }else if(st.step===2){
+    const f=st.form;
+    body=`<h3 style="font-size:21px">Essential information</h3>
+    <p class="msub">Only what responders need. Keep it short — help is more important than paperwork.</p>
+    <div class="fgrid">
+      <div class="fg"><label>Full name</label><input class="inp" id="f_name" value="${esc(f.name)}"></div>
+      <div class="fg"><label>Contact number</label><input class="inp" id="f_phone" value="${esc(f.phone)}"></div>
+      <div class="fg full"><label>Current location</label><input class="inp" id="f_loc" value="${esc(f.loc)}"></div>
+      <div class="fg"><label>Number of people affected</label><input class="inp" id="f_people" type="number" min="1" max="99" value="${f.people}"></div>
+      <div class="fg"><label>Injury status</label><select class="inp" id="f_injury">${[['severe','Severe injuries'],['moderate','Moderate injuries'],['minor','Minor injuries'],['none','No injuries']].map(o=>`<option value="${o[0]}" ${f.injury===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+      <div class="fg"><label>Immediate danger level</label><select class="inp" id="f_danger">${[['extreme','Extreme — life-threatening right now'],['high','High — danger likely to escalate'],['moderate','Moderate — unsafe but stable'],['low','Low — assistance needed']].map(o=>`<option value="${o[0]}" ${f.danger===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+      <div class="fg" style="display:flex;flex-direction:column;gap:8px;justify-content:center">
+        <label class="check"><input type="checkbox" id="f_trapped" ${f.trapped?'checked':''}> People are trapped or cannot move</label>
+        <label class="check"><input type="checkbox" id="f_vuln" ${f.vuln?'checked':''}> Children, elderly or disabled present</label>
+      </div>
+      <div class="fg full"><label>Additional notes (optional)</label><textarea class="inp" id="f_notes" rows="2" placeholder="Access route, landmarks, specific needs…">${esc(f.notes)}</textarea></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:22px">
+      <button class="btn btn-ghost" data-act="sosBack">${ico('arrowR',14)} Back</button>
+      <button class="btn btn-danger" data-act="sosAssess">Assess Priority ${ico('zap',14)}</button>
+    </div>`;
+  }else if(st.step===3){
+    if(st.phase==='scan'){
+      body=`<div class="scanbox"><div class="scanline" id="scanline"></div>
+        <div style="position:relative">${ico('zap',34)}</div>
+        <h3 style="margin-top:14px">Assessing emergency priority…</h3>
+        <p class="muted" style="font-size:13.5px;margin-top:6px">Running simulated risk scoring on the report details</p></div>`;
+    }else{
+      const a=st.assess,cl=classOf(a.score);
+      const col=cl==='CRITICAL'?'red':cl==='HIGH'?'orange':cl==='MEDIUM'?'yellow':'blue';
+      body=`<div class="pri-reveal">
+        <div class="mini-h" style="margin-bottom:10px">PRIORITY ENGINE RESULT</div>
+        <div class="pri-word" style="color:var(--${col})" id="priWord">${cl}</div>
+        <div class="score-meter">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px" class="mono muted"><span>PRIORITY SCORE</span><span id="scoreNum">0 / 100</span></div>
+          <div class="bar" style="height:12px;margin-top:6px"><i id="scoreBar" style="width:0%;background:var(--${col})"></i></div>
+        </div>
+        <div style="max-width:460px;margin:22px auto 0;text-align:left">
+          <div class="mini-h">DECISION SUPPORT INSIGHTS — WHY THIS SCORE</div>
+          ${insights(st.assess.d,a.score).map(i=>`<div class="insight plus">${esc(i)}</div>`).join('')}
+          <div class="card" style="padding:14px;margin-top:12px;background:var(--bg2)">
+            ${a.factors.map(f=>`<div class="factor"><span class="muted">${esc(f[0])}</span><span class="fv">+${f[1]}</span></div>`).join('')}
+            <div class="factor" style="border-top:1px solid var(--line);margin-top:4px;padding-top:10px"><b>TOTAL</b><span class="fv" style="color:var(--${col})">${a.score} / 100</span></div>
+          </div>
+          <p class="faint" style="font-size:11.5px;margin-top:10px">Intelligent Priority Assessment — rule-based decision support (simulated risk scoring, not a medical device).</p>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;margin-top:26px;flex-wrap:wrap">
+          <button class="btn btn-ghost" data-act="sosBack">${ico('arrowR',14)} Back</button>
+          <button class="btn btn-danger lg" data-act="sosSubmit">${ico('send',16)} Submit Emergency Request</button>
+        </div>
+      </div>`;
+    }
+  }else{
+    const inc=getInc(st.done);
+    body=`<div style="text-align:center;padding:14px 0">
+      <div class="succ-check" id="succCheck">${ico('check',36)}</div>
+      <h3 style="font-size:23px">Emergency Request Received</h3>
+      <p class="muted" style="margin:8px 0 4px">Your request is now in the command center queue. It stays visible until you are safe — that is the loop.</p>
+      <div class="req-id">${inc?inc.id:'—'}</div>
+      ${inc?`<div style="max-width:420px;margin:18px auto 0;text-align:left"><div class="mini-h">LIVE TRACKING PREVIEW</div>
+      <div class="card" style="padding:16px;background:var(--bg2)"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:14px">${STAGES7[0]}</b>${sBadge('RECEIVED')}</div>
+      ${miniStages(inc)}<div class="muted" style="font-size:12.5px">Follow updates live — the command center sees the same timeline.</div></div></div>`:''}
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:26px;flex-wrap:wrap">
+        <button class="btn btn-ghost" data-act="go" data-to="/citizen">Return to portal</button>
+        <button class="btn btn-primary" data-act="go" data-to="/track">${ico('eye',15)} Track My Request</button>
+      </div></div>`;
+  }
+  return `
+<div class="cit-top"><div class="brand" style="font-size:16px"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+  <span class="badge b-red" style="margin-left:8px"><i></i>${st.done?'REQUEST ACTIVE':'EMERGENCY MODE'}</span>
+  <div style="margin-left:auto"><button class="btn sm btn-ghost" data-act="go" data-to="/citizen">${ico('x',14)} Exit</button></div></div>
+<div class="cit-main sos-page">
+  <div class="wiz-dots">${dots.map((d,i)=>`<div class="wd ${st.step>i?'on':''}" title="${d}"></div>`).join('')}</div>
+  <div class="mono faint" style="font-size:10.5px;letter-spacing:.14em;margin-bottom:10px">STEP ${Math.min(st.step,4)} OF 4 — ${dots[Math.min(st.step,4)-1].toUpperCase()}</div>
+  <div class="card" style="padding:26px" id="sosBody">${body}</div>
+</div>`;
+};
+
+const viewTrack=()=>{
+  const empty=`<div class="cit-top">${citizenNavInner('track')}</div>
+  <div class="cit-main sos-page">
+    <div class="card empty" data-anim><div class="ic">${ico('eye',22)}</div><b style="font-size:16px">No requests to track yet</b>
+    <p class="muted" style="margin:8px 0 18px;font-size:14px">When you send an SOS, it appears here and stays visible until it is resolved — the full closed loop.</p>
+    <button class="btn btn-danger" data-act="go" data-to="/sos">${ico('siren',15)} Send an SOS</button></div>
+  </div>`;
+  if(!S.myRequests.length)return empty;
+  let id=(UI.trackId&&getInc(UI.trackId))?UI.trackId:(S.myRequests.find(r=>getInc(r))||S.myRequests[0]);
+  const inc=getInc(id);
+  if(!inc)return empty;
+  UI.trackId=id;
+  const idx=STAGE_IDX[inc.status]??0,t=inc.team?getTeam(inc.team):null,sh=inc.shelter?getShelter(inc.shelter):null;
+  const keys=['reported via','Priority assessed','under review','assigned','en route','operation started','resolved'];
+  const resolved=inc.status==='RESOLVED';
+  return citizenNav('track')+`
+<div class="cit-main sos-page">
+  ${S.myRequests.filter(r=>getInc(r)).length>1?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">${S.myRequests.filter(r=>getInc(r)).map(r=>`<button class="tab ${r===id?'active':''}" data-act="trackSel" data-id="${r}">${r}</button>`).join('')}</div>`:''}
+  ${resolved?`<div class="card" data-anim style="border-color:rgba(47,214,163,.5);background:rgba(47,214,163,.05);display:flex;gap:14px;align-items:center;margin-bottom:16px">
+    <div class="stat-ic c-green" style="width:44px;height:44px">${ico('check',20)}</div>
+    <div><b style="font-size:16px">You are safe.</b><div class="muted" style="font-size:13.5px">This request has been resolved. Thank you for staying on the loop.</div></div></div>`:''}
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px" class="track-grid">
+    <div class="card" data-anim>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+        <div><div class="mini-h">LIVE RESPONSE TIMELINE · CLOSED LOOP</div>
+        <h3 style="font-size:19px" class="mono">${inc.id}</h3></div>
+        ${sBadge(inc.status)} ${pBadge(inc.priority)}
+      </div>
+      <div class="stages">
+        ${STAGES7.map((s,i)=>{
+          const tl=[...inc.timeline].reverse().find(x=>x.label.toLowerCase().includes(keys[i]));
+          const sub=i<idx?(tl?fmtT(tl.ts)+' · '+esc(tl.label):'COMPLETED'):(i===idx?'IN PROGRESS':'PENDING');
+          return `<div class="stage ${i<idx?'done':i===idx?'cur':'future'}" data-anim>
+            <div class="sd">${i<idx?ico('check',13):ico('radio',13)}</div>
+            <div><div class="sl">${s}</div><div class="st">${sub}</div>
+            ${i===idx?`<div class="muted" style="font-size:13px;margin-top:4px;max-width:340px">${esc(citizenMsg(inc.status,inc))}</div>`:''}</div></div>`;}).join('')}
+      </div>
+      <div class="faint" style="font-size:12px;margin-top:18px;display:flex;gap:8px;align-items:center"><i class="live-dot"></i>Updates appear automatically as the command center progresses your case.</div>
+    </div>
+    <div class="col-stack" data-anim>
+      <div class="card"><div class="mini-h">REQUEST DETAILS</div>
+        <div class="kv"><span class="k">Priority</span><span class="v">${inc.priority} · ${inc.score}/100</span></div>
+        <div class="kv"><span class="k">Emergency type</span><span class="v">${esc(inc.type)}</span></div>
+        <div class="kv"><span class="k">Reported</span><span class="v mono">${fmtT(inc.reportedAt)} · ${ago(inc.reportedAt)}</span></div>
+        <div class="kv"><span class="k">Current status</span><span class="v">${inc.status}</span></div>
+        <div class="kv"><span class="k">Assigned team</span><span class="v">${t?esc(t.name):'<span class="faint">Pending</span>'}</span></div>
+        <div class="kv"><span class="k">Est. response</span><span class="v mono">${t?fmtT(inc.reportedAt+18*6e4):'—'}</span></div>
+        <div class="kv"><span class="k">Location</span><span class="v">${esc(inc.location)}</span></div>
+        ${sh?`<div class="kv"><span class="k">Shelter</span><span class="v">${esc(sh.name)}</span></div>`:''}
+      </div>
+      <div class="card"><div class="mini-h">ACTIVITY LOG</div><div class="tl">
+        ${[...inc.timeline].reverse().slice(0,6).map((e,i)=>`<div class="tl-item ${i===0?'hl':''}"><div class="tt mono">${fmtT(e.ts)}</div><div class="tl-t">${esc(e.label)}</div></div>`).join('')}
+      </div></div>
+    </div>
+  </div>
+</div>
+<style>@media(max-width:920px){.track-grid{grid-template-columns:1fr!important}}</style>`;
+};
+function citizenNavInner(active){
+  return `<div class="brand" style="font-size:16px;cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+  <div class="cit-links"><span class="cit-link ${active==='home'?'active':''}" data-act="go" data-to="/citizen">Home</span><span class="cit-link ${active==='track'?'active':''}">Track</span><span class="cit-link" data-act="go" data-to="/shelters">Shelters</span><span class="cit-link ${active==='alerts'?'active':''}" data-act="go" data-to="/alerts">Alerts</span></div>
+  <div style="margin-left:auto"><button class="btn sm btn-ghost" data-act="go" data-to="/roles">${ico('swap',14)} Switch Role</button></div>`;
+}
+
+const viewAlerts=()=>citizenNav('alerts')+`
+<div class="cit-main sos-page">
+  <div class="sec-kicker" data-anim>OFFICIAL ALERTS</div>
+  <h2 style="font-size:26px;margin-bottom:6px" data-anim>Active warnings in your region</h2>
+  <p class="muted" style="margin-bottom:22px;font-size:14px" data-anim>Issued by the command center. Critical alerts appear first.</p>
+  ${S.alerts.map(a=>{const col=a.level==='CRITICAL ALERT'?'red':a.level==='EVACUATION NOTICE'?'orange':a.level==='WEATHER WARNING'?'yellow':'blue';
+  return `<div class="card alert-item" data-anim style="border-left:3px solid var(--${col});background:var(--surface);margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+      <h4 style="font-size:17px">${esc(a.title)}</h4>${badge(a.level,col)}
+    </div>
+    <div class="muted mono" style="font-size:11.5px;margin-top:6px">${ico('pin',12)} ${esc(a.area).toUpperCase()} · ${ago(a.ts).toUpperCase()}</div>
+    <p style="margin-top:10px;font-size:14px">${esc(a.instructions)}</p>
+    ${a.level==='CRITICAL ALERT'||a.level==='EVACUATION NOTICE'?`<button class="btn sm btn-primary" data-act="go" data-to="/shelters" style="margin-top:12px">${ico('home',14)} View Safe Shelters</button>`:''}
+  </div>`;}).join('')}
+</div>`;
+
+/* ---- COMMAND SIDE ---- */
+function shellHTML(title,inner,active){
+  const nav=navFor(S.role);
+  return `<div class="shell">
+  <aside class="sidebar">
+    <div class="brand" style="cursor:pointer" data-act="go" data-to="${roleHome(S.role)}"><span class="brand-mark">${ico('loop',17)}</span>SafeLoop</div>
+    <div class="nav-sec">OPERATIONS</div>
+    ${nav.map(n=>`<div class="nav-item ${active===n[0]?'active':''}" data-act="go" data-to="${n[0]}">${ico(n[2],17)} ${n[1]} ${n[3]?`<span class="nv">${n[3]}</span>`:''}</div>`).join('')}
+    <div class="nav-bottom">
+      <div class="nav-item" data-act="openDrawer">${ico('bell',17)} Notifications <span class="nv">${S.notifications.filter(n=>!n.read).length||''}</span></div>
+      <div class="nav-item ${active==='/settings'?'active':''}" data-act="go" data-to="/settings">${ico('gear',17)} Settings & Demo</div>
+      <div class="nav-item" data-act="go" data-to="/roles">${ico('swap',17)} Switch Role</div>
+      <div class="nav-item" data-act="go" data-to="/">${ico('home',17)} About Platform</div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="btn btn-ic hamb" data-act="nav" aria-label="Menu">${ico('list',17)}</button>
+      <span class="pg">${title}</span>
+      <div class="tb-right">
+        <span class="tb-clock mono"><i class="live-dot"></i><span id="clock"></span> · LIVE</span>
+        <span class="badge b-blue"><i></i>${({citizen:'CITIZEN',command:'COMMAND CENTER',team:'RESCUE TEAM',volunteer:'VOLUNTEER',shelter:'SHELTER OPS'})[S.role]||'GUEST'}</span>
+        <button class="btn btn-ic bell-btn" data-act="openDrawer" aria-label="Notifications">${ico('bell',17)}<span class="bell-n" id="bellN">${S.notifications.filter(n=>!n.read).length||''}</span></button>
+      </div>
+    </div>
+    <div class="content" id="content">${inner}</div>
+  </div></div>`;
+}
+function roleHome(r){return {citizen:'/citizen',command:'/command',team:'/team',volunteer:'/vol',shelter:'/shelterc'}[r]||'/citizen';}
+function navFor(role){
+  if(role==='command'){
+    const crit=activeIncs().filter(i=>i.priority==='CRITICAL').length,dep=S.teams.filter(t=>t.avail==='DEPLOYED').length;
+    return [['/command','Overview','grid'],['/incidents','Incidents','alert',String(S.incidents.length)],['/map','Emergency Map','pin',crit?String(crit):''],['/teams','Rescue Teams','helmet',dep?String(dep):''],['/resources','Resources','box'],['/shelters','Shelters','home'],['/volunteers','Volunteers','heart'],['/analytics','Analytics','chart']];
+  }
+  if(role==='team')return[['/team','My Mission','helmet'],['/command','Command Overview','grid']];
+  if(role==='volunteer')return[['/vol','Volunteer Desk','heart'],['/shelters','Shelters','home']];
+  if(role==='shelter')return[['/shelterc','Shelter Ops','home']];
+  return[['/citizen','Citizen Home','users']];
+}
+const dashMetrics=()=>{
+  const act=activeIncs(),crit=act.filter(i=>i.priority==='CRITICAL');
+  const dep=S.teams.filter(t=>t.avail==='DEPLOYED').length;
+  const res=S.resources.reduce((a,r)=>a+r.available,0);
+  const occ=Math.round(S.shelters.reduce((a,s)=>a+s.occ/s.cap*100,0)/S.shelters.length);
+  return `<div class="metrics">
+    ${stat('ACTIVE INCIDENTS',act.length,'alert','blue')}
+    ${stat('CRITICAL',crit.length,'zap','red')}
+    ${stat('TEAMS DEPLOYED',dep,'helmet','orange')}
+    ${stat('RESOURCE UNITS',res,'box','teal')}
+    ${stat('SHELTER OCCUPANCY',occ,'home','yellow','%')}
+    ${stat('RESOLVED TODAY',S.resolvedToday,'check','green')}
+  </div>`;
+};
+const viewCommand=()=>{
+  if(!UI.sel||!getInc(UI.sel)){const top=activeIncs().sort((a,b)=>b.score-a.score)[0];UI.sel=top?top.id:null;}
+  const feed=S.incidents.flatMap(i=>i.timeline.map(t=>({...t,id:i.id}))).sort((a,b)=>b.ts-a.ts).slice(0,8);
+  const pmix=['CRITICAL','HIGH','MEDIUM','LOW'].map(p=>({p,n:S.incidents.filter(i=>i.priority===p&&i.status!=='RESOLVED').length}));
+  const mx=Math.max(...pmix.map(x=>x.n),1);
+  return `${dashMetrics()}
+  <div class="dash-grid">
+    <div class="col-stack">
+      <div class="card" data-anim><div class="mini-h">PRIORITY MIX · ACTIVE</div>
+        ${pmix.map(x=>`<div class="pmix-row"><span class="pl">${x.p}</span>${bar(x.n/mx*100,x.p==='CRITICAL'?'red':x.p==='HIGH'?'orange':x.p==='MEDIUM'?'yellow':'blue')}<span class="pv">${x.n}</span></div>`).join('')}
+        <button class="btn sm btn-ghost" data-act="go" data-to="/incidents" style="width:100%;margin-top:8px">${ico('list',14)} All incidents</button>
+      </div>
+      <div class="card" data-anim><div class="mini-h">RESOURCE SNAPSHOT</div>
+        ${S.resources.slice(0,4).map(r=>{const st=resStatus(r);return `<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span class="muted">${r.name}</span><span class="mono" style="color:var(--${st==='CRITICAL'?'red':st==='LOW'?'yellow':'green'})">${r.available}</span></div>
+        ${bar(r.available/r.total*100,st==='CRITICAL'?'red':st==='LOW'?'yellow':'teal')}</div>`;}).join('')}
+      </div>
+    </div>
+    <div class="col-stack col-map" data-anim>${mapHTML(470)}</div>
+    <div class="col-stack" id="selPanel" data-anim>${selPanelHTML()}</div>
+  </div>
+  <div class="card act-feed" data-anim style="margin-top:14px"><div class="mini-h">LIVE ACTIVITY FEED · ALL INCIDENTS</div>
+    ${feed.map(e=>`<div class="af-item"><span class="af-t">${fmtT(e.ts)}</span><span class="af-id">${e.id}</span><span>${esc(e.label)}</span></div>`).join('')}
+  </div>`;
+};
+const viewMapPage=()=>`
+  <div style="display:grid;grid-template-columns:1fr 350px;gap:14px" class="map-page">
+    <div data-anim>${mapHTML(600)}</div>
+    <div class="col-stack" id="selPanel" data-anim>${selPanelHTML()}</div>
+  </div>
+  <style>@media(max-width:1150px){.map-page{grid-template-columns:1fr!important}}</style>`;
+
+function filteredIncs(){
+  const f=UI.f;let l=[...S.incidents];
+  if(f.tab==='CRITICAL'||f.tab==='HIGH')l=l.filter(i=>i.priority===f.tab);
+  else if(f.tab==='ACTIVE')l=l.filter(i=>i.status!=='RESOLVED');
+  else if(f.tab==='ASSIGNED')l=l.filter(i=>i.team&&i.status!=='RESOLVED');
+  else if(f.tab==='RESOLVED')l=l.filter(i=>i.status==='RESOLVED');
+  if(f.pr)l=l.filter(i=>i.priority===f.pr);
+  if(f.ty)l=l.filter(i=>i.type===f.ty);
+  if(f.q){const q=f.q.toLowerCase();l=l.filter(i=>(i.id+' '+i.type+' '+i.location+' '+i.name).toLowerCase().includes(q));}
+  return l.sort((a,b)=>b.score-a.score);
+}
+const viewIncidents=()=>`
+  <div class="page-head" data-anim><div><h2>Incident Management</h2><div class="sub">Every request, every stage — one queue, full accountability.</div></div>
+  <span class="badge b-blue"><i></i>${activeIncs().length} ACTIVE · ${S.incidents.length} TOTAL</span></div>
+  <div class="card" data-anim style="margin-bottom:14px">
+    <div class="filters" style="margin-bottom:14px">
+      <input class="inp" id="incSearch" placeholder="Search ID, type, location…" style="max-width:260px" value="${esc(UI.f.q)}">
+      <select class="inp" id="fPr" style="max-width:150px"><option value="">All priorities</option>${['CRITICAL','HIGH','MEDIUM','LOW'].map(p=>`<option ${UI.f.pr===p?'selected':''}>${p}</option>`).join('')}</select>
+      <select class="inp" id="fTy" style="max-width:190px"><option value="">All types</option>${Object.keys(TYPE_ICON).map(t=>`<option ${UI.f.ty===t?'selected':''}>${t}</option>`).join('')}</select>
+    </div>
+    <div class="tabs">${['ALL','CRITICAL','HIGH','ACTIVE','ASSIGNED','RESOLVED'].map(t=>`<button class="tab ${UI.f.tab===t?'active':''}" data-act="incTab" data-id="${t}">${t}</button>`).join('')}</div>
+  </div>
+  <div class="card" data-anim style="padding:8px"><div class="tb-wrap" id="incList">${incListHTML()}</div></div>`;
+function incListHTML(){
+  const l=filteredIncs();
+  if(!l.length)return `<div class="empty"><div class="ic">${ico('check',20)}</div>No incidents match these filters.<br><span class="faint" style="font-size:12.5px">Try clearing the search or switching tabs.</span></div>`;
+  return `<table class="tb"><thead><tr><th>ID</th><th>TYPE</th><th>LOCATION</th><th>PRIORITY</th><th>PEOPLE</th><th>STATUS</th><th>TEAM</th><th>REPORTED</th></tr></thead>
+  <tbody>${l.map(i=>`<tr data-act="go" data-to="/incident/${i.id}">
+    <td class="mono" style="font-weight:600">${i.id}</td>
+    <td><span style="display:flex;gap:8px;align-items:center">${typeIcon(i.type,15)} ${esc(i.type)}</span></td>
+    <td class="muted">${esc(i.location)}</td>
+    <td>${pBadge(i.priority)} <span class="mono faint" style="font-size:11px">${i.score}</span></td>
+    <td class="mono">${i.people}</td>
+    <td>${sBadge(i.status)}</td>
+    <td class="muted">${i.team?esc(getTeam(i.team)?.name||'—'):'<span class="faint">—</span>'}</td>
+    <td class="mono faint">${ago(i.reportedAt)}</td></tr>`).join('')}</tbody></table>`;
+}
+const viewIncident=id=>{
+  const inc=getInc(id);
+  if(!inc)return `<div class="card empty"><div class="ic">${ico('alert',20)}</div>Incident not found. <button class="btn sm btn-ghost" data-act="go" data-to="/incidents" style="margin-top:10px">Back to incidents</button></div>`;
+  const t=inc.team?getTeam(inc.team):null,sh=inc.shelter?getShelter(inc.shelter):null;
+  const col=inc.priority==='CRITICAL'?'red':inc.priority==='HIGH'?'orange':inc.priority==='MEDIUM'?'yellow':'blue';
+  const ns=inc.status!=='RESOLVED'?nextStatus(inc):null;
+  return `
+  <div style="margin-bottom:16px"><button class="btn sm btn-ghost" data-act="go" data-to="/incidents">Back to incidents</button></div>
+  <div class="page-head" data-anim>
+    <div><h2 style="display:flex;gap:12px;align-items:center" class="mono">${inc.id}</h2>
+    <div class="sub" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${typeIcon(inc.type,16)} <b style="color:var(--text)">${esc(inc.type)}</b> · ${esc(inc.location)} · reported ${ago(inc.reportedAt)}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${pBadge(inc.priority)} ${sBadge(inc.status)} <span class="badge b-muted mono">SCORE ${inc.score}/100</span></div>
+  </div>
+  <div class="detail-grid">
+    <div class="col-stack">
+      <div class="card" data-anim><div class="mini-h">INCIDENT SUMMARY</div>
+        <p style="margin-bottom:14px;font-size:14.5px">${esc(inc.desc)||'No description provided.'}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px">
+          <div class="kv"><span class="k">Reported by</span><span class="v">${esc(inc.name)}</span></div>
+          <div class="kv"><span class="k">Contact</span><span class="v mono">${esc(inc.contact)}</span></div>
+          <div class="kv"><span class="k">People affected</span><span class="v mono">${inc.people}</span></div>
+          <div class="kv"><span class="k">Injuries</span><span class="v" style="text-transform:capitalize">${esc(inc.injuries)}</span></div>
+          <div class="kv"><span class="k">Danger level</span><span class="v" style="text-transform:capitalize;color:var(--${inc.danger==='extreme'?'red':inc.danger==='high'?'orange':'muted'})">${esc(inc.danger)}</span></div>
+          <div class="kv"><span class="k">Reported time</span><span class="v mono">${fmtDT(inc.reportedAt)}</span></div>
+        </div>
+        <div style="margin-top:12px">${inc.trapped?`<span class="fac" style="border-color:rgba(255,77,94,.4);color:#FF8A94">${ico('users',12)} People trapped</span>`:''}
+        ${inc.vulnerable?`<span class="fac" style="border-color:rgba(255,154,61,.4);color:#FFB877">${ico('heart',12)} Vulnerable individuals</span>`:''}</div>
+      </div>
+      <div class="card" data-anim><div class="mini-h">PRIORITY ANALYSIS · DECISION SUPPORT</div>
+        <div class="score-hero">
+          <div><div class="score-num" style="color:var(--${col})" id="scoreBig">0</div><div class="mono faint" style="font-size:10.5px">PRIORITY SCORE / 100</div></div>
+          <div style="flex:1">${bar(inc.score,col)}<div style="margin-top:8px">${pBadge(inc.priority)}</div></div>
+        </div>
+        <div class="mini-h">WHY THIS INCIDENT IS PRIORITIZED</div>
+        ${insights(inc,inc.score).map(x=>`<div class="insight plus">${esc(x)}</div>`).join('')}
+        <p class="faint" style="font-size:11.5px;margin-top:10px">Intelligent Priority Assessment — simulated risk scoring by a rule-based priority engine.</p>
+      </div>
+      <div class="card" data-anim><div class="mini-h">ACTIVITY TIMELINE</div><div class="tl" id="incTL">
+        ${[...inc.timeline].reverse().map((e,i)=>`<div class="tl-item ${i===0?'hl':''}"><div class="tt mono">${fmtT(e.ts)} ${i===0?'· LATEST':''}</div><div class="tl-t">${esc(e.label)}</div></div>`).join('')}
+      </div></div>
+    </div>
+    <div class="col-stack">
+      <div class="card" data-anim><div class="mini-h">STATUS CONTROL</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700">${inc.status}</span>${sBadge(inc.status)}</div>
+        ${incActions(inc)}
+        ${ns?`<div class="faint" style="font-size:12px;margin-top:12px">Next stage in the loop: <b style="color:var(--text)">${ns}</b></div>`:''}
+      </div>
+      <div class="card" data-anim><div class="mini-h">ASSIGNED RESPONSE TEAM</div>
+        ${t?`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><div class="stat-ic c-blue" style="width:38px;height:38px">${ico('helmet',17)}</div>
+        <div><b>${esc(t.name)}</b><div class="muted" style="font-size:12.5px">${esc(t.spec)} · ${t.cap} members</div></div></div>
+        <div style="display:flex;gap:8px;align-items:center">${sBadge(t.avail)} <span class="muted" style="font-size:12.5px">${esc(t.loc)}</span></div>`:
+        `<div class="empty" style="padding:20px"><div class="ic">${ico('helmet',18)}</div>No team assigned yet.<br><button class="btn sm btn-primary" data-act="assignOpen" data-id="${inc.id}" style="margin-top:10px">${ico('helmet',14)} Assign a team</button></div>`}
+      </div>
+      <div class="card" data-anim><div class="mini-h">RESOURCE ALLOCATION</div>
+        ${inc.resources.length?inc.resources.map(r=>`<div class="kv"><span class="k">${esc(r.name)}</span><span class="v mono">${r.qty} ${r.unit}</span></div>`).join(''):`<div class="muted" style="font-size:13px;margin-bottom:8px">No resources allocated to this incident yet.</div>`}
+        <button class="btn sm" data-act="allocOpen" data-id="${inc.id}" style="margin-top:10px;width:100%">${ico('box',14)} Allocate resources</button>
+      </div>
+      <div class="card" data-anim><div class="mini-h">SHELTER COORDINATION</div>
+        ${sh?`<div class="kv"><span class="k">${esc(sh.name)}</span><span class="v">${sh.occ}/${sh.cap}</span></div>
+        <div style="margin-top:8px">${bar(sh.occ/sh.cap*100,shelterStatus(sh)==='FULL'?'red':shelterStatus(sh)==='NEAR FULL'?'orange':'green')}</div>`:
+        `<div class="muted" style="font-size:13px;margin-bottom:10px">No shelter linked. Assign one when victims are evacuated.</div>`}
+        <button class="btn sm" data-act="shelterOpen" data-id="${inc.id}" style="margin-top:12px;width:100%">${ico('home',14)} ${sh?'Change shelter':'Assign shelter'}</button>
+      </div>
+    </div>
+  </div>`;
+};
+const viewTeams=()=>`
+  <div class="page-head" data-anim><div><h2>Rescue Teams</h2><div class="sub">${S.teams.filter(t=>t.avail==='AVAILABLE').length} available · ${S.teams.filter(t=>t.avail==='DEPLOYED').length} deployed across the sector.</div></div></div>
+  <div class="sh-grid">
+    ${S.teams.map(t=>{const m=t.mission?getInc(t.mission):null;return `<div class="card hov" data-anim>
+      <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+        <div class="stat-ic c-blue" style="width:42px;height:42px">${ico('helmet',19)}</div>
+        <div style="flex:1"><b style="font-size:15.5px">${esc(t.name)}</b><div class="muted" style="font-size:12.5px">${esc(t.spec)} · ${esc(t.loc)}</div></div>
+        ${sBadge(t.avail)}
+      </div>
+      <div class="kv"><span class="k">Current mission</span><span class="v">${m?`<a class="mono" data-act="go" data-to="/incident/${m.id}">${m.id}</a>`:'<span class="faint">Standing by</span>'}</span></div>
+      <div class="kv"><span class="k">Team capacity</span><span class="v mono">${t.cap} members</span></div>
+      <div style="margin-top:12px">${t.equip.map(e=>`<span class="fac">${esc(e)}</span>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        ${t.avail==='AVAILABLE'?`<button class="btn sm btn-primary" data-act="dispatchOpen" data-id="${t.id}" style="flex:1">${ico('send',14)} Dispatch to incident</button>`:(m?`<button class="btn sm" data-act="go" data-to="/incident/${m.id}" style="flex:1">${ico('eye',14)} View mission</button>`:'')}
+      </div>
+    </div>`;}).join('')}
+  </div>`;
+const viewResources=()=>`
+  <div class="page-head" data-anim><div><h2>Resource Allocation</h2><div class="sub">Live inventory across the response network. Allocations flow straight into incident timelines.</div></div></div>
+  <div class="sh-grid" style="margin-bottom:16px">
+    ${S.resources.map(r=>{const st=resStatus(r),availP=r.available/r.total*100,allocP=r.allocated/r.total*100;return `<div class="card hov" data-anim>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+        <div class="stat-ic c-teal" style="width:40px;height:40px">${ico(r.icon,18)}</div>
+        <div style="flex:1"><b>${r.name}</b><div class="muted" style="font-size:12px">Critical threshold: ${r.crit} ${r.unit}</div></div>
+        ${sBadge(st)}
+      </div>
+      <div class="res-bar"><i style="width:${availP}%;background:var(--${st==='CRITICAL'?'red':st==='LOW'?'yellow':'teal'})"></i><i style="left:${availP}%;width:${allocP}%;background:${st==='CRITICAL'?'rgba(255,77,94,.4)':st==='LOW'?'rgba(255,201,77,.35)':'rgba(77,159,255,.3)'}"></i></div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px" class="mono">
+        <span class="muted">TOTAL ${r.total.toLocaleString()}</span><span style="color:var(--green)">AVAIL ${r.available.toLocaleString()}</span><span class="faint">ALLOC ${r.allocated.toLocaleString()}</span>
+      </div>
+      <button class="btn sm" data-act="allocOpen" data-id="${r.id}" style="width:100%;margin-top:12px">${ico('send',14)} Allocate to incident</button>
+    </div>`;}).join('')}
+  </div>
+  <div class="card" data-anim><div class="mini-h">RECENT ALLOCATION LOG</div>
+    ${S.allocLog.slice(0,6).map(a=>`<div class="af-item"><span class="af-t">${fmtT(a.ts)}</span><span>${esc(a.txt)}</span></div>`).join('')||'<div class="empty" style="padding:18px">Resource inventory is stable — no recent allocations.</div>'}
+  </div>`;
+const viewShelters=()=>`
+  <div class="page-head" data-anim><div><h2>Shelter Coordination</h2><div class="sub">${S.shelters.length} facilities · ${S.shelters.reduce((a,s)=>a+(s.cap-s.occ),0).toLocaleString()} spaces available right now.</div></div>
+  ${S.role==='command'?`<span class="badge b-blue"><i></i>COMMAND MODE — ALLOCATION ENABLED</span>`:''}</div>
+  <div class="sh-grid">
+    ${S.shelters.map(sh=>{const p=Math.round(sh.occ/sh.cap*100),st=shelterStatus(sh);
+    return `<div class="card hov" data-anim>
+      <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+        <div class="stat-ic c-green" style="width:42px;height:42px">${ico('home',19)}</div>
+        <div style="flex:1"><b style="font-size:15.5px">${esc(sh.name)}</b><div class="muted" style="font-size:12.5px">${ico('pin',12)} ${esc(sh.loc)}</div></div>
+        ${sBadge(st)}
+      </div>
+      ${bar(p,p>=100?'red':p>=80?'orange':p>=55?'yellow':'green')}
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px" class="mono">
+        <span class="muted">CAP ${sh.cap}</span><span>OCC ${sh.occ}</span><span style="color:var(--green)">${sh.cap-sh.occ} FREE</span>
+      </div>
+      <div style="margin-top:12px">${sh.fac.map(f=>`<span class="fac">${ico('check',11)} ${f}</span>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        ${st!=='FULL'?`<button class="btn sm btn-primary" data-act="evacOpen" data-id="${sh.id}" style="flex:1">${ico('users',14)} Assign evacuees</button>`:`<span class="muted" style="font-size:13px;flex:1;display:flex;align-items:center;gap:8px">${ico('alert',15)} At full capacity</span>`}
+        ${S.role==='citizen'?`<button class="btn sm btn-ghost" data-act="directions" data-id="${esc(sh.name)}">${ico('pin',14)} Directions</button>`:''}
+      </div>
+    </div>`;}).join('')}
+  </div>`;
+function opportunities(){
+  return activeIncs().filter(i=>i.people>=3||i.trapped).map(i=>({inc:i,need:Math.max(2,Math.ceil(i.people*1.2)),joined:i.joined||0,skills:TYPE_SKILLS[i.type]||['Shelter Support']}));
+}
+const viewVolunteers=()=>`
+  <div class="page-head" data-anim><div><h2>Volunteer Coordination</h2><div class="sub">${S.volunteers.filter(v=>v.avail==='AVAILABLE').length} available · ${S.volunteers.filter(v=>v.avail==='ASSIGNED').length} assigned to active incidents.</div></div></div>
+  <div class="card" data-anim style="margin-bottom:16px"><div class="mini-h">OPEN VOLUNTEER NEEDS · DERIVED FROM ACTIVE INCIDENTS</div>
+    ${opportunities().length?opportunities().map(o=>`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:13px 0;border-bottom:1px dashed var(--line)">
+      <div class="stat-ic c-${o.inc.priority==='CRITICAL'?'red':o.inc.priority==='HIGH'?'orange':'yellow'}" style="width:38px;height:38px">${typeIcon(o.inc.type,16)}</div>
+      <div style="flex:1;min-width:200px"><b>${esc(o.inc.type).toUpperCase()} RESPONSE · ${esc(o.inc.location)}</b>
+        <div style="margin-top:5px">${o.skills.map(s=>`<span class="fac">${s}</span>`).join('')}</div></div>
+      <div style="width:150px">${bar(o.joined/o.need*100,'teal')}<div class="mono faint" style="font-size:11px;margin-top:4px">${o.joined}/${o.need} JOINED · ${o.inc.id}</div></div>
+      <button class="btn sm btn-primary" data-act="volOpen" data-id="${o.inc.id}">${ico('heart',14)} Assign volunteers</button>
+    </div>`).join(''):`<div class="empty" style="padding:22px"><div class="ic">${ico('check',18)}</div>No open volunteer needs right now.</div>`}
+  </div>
+  <div class="sh-grid">
+    ${S.volunteers.map(v=>{const inc=v.incident?getInc(v.incident):null;return `<div class="card hov" data-anim>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+        <div class="stat-ic c-teal" style="width:38px;height:38px">${ico('heart',16)}</div>
+        <div style="flex:1"><b>${esc(v.name)}</b><div class="muted" style="font-size:12.5px">${esc(v.loc)}</div></div>${sBadge(v.avail)}
+      </div>
+      <div>${v.skills.map(s=>`<span class="fac">${s}</span>`).join('')}</div>
+      ${inc?`<button class="btn sm btn-ghost" data-act="go" data-to="/incident/${inc.id}" style="margin-top:10px;width:100%">${ico('eye',13)} Assigned to ${inc.id}</button>`:''}
+    </div>`;}).join('')}
+  </div>`;
+function analyticsData(){
+  const types={};S.incidents.forEach(i=>types[i.type]=(types[i.type]||0)+1);
+  const pal=['red','orange','yellow','blue','green','teal'];
+  const byType=Object.entries(types).map(([l,v],i)=>({l,v,c:pal[i%pal.length]}));
+  const pri=['CRITICAL','HIGH','MEDIUM','LOW'].map((p,i)=>({l:p,v:S.incidents.filter(x=>x.priority===p).length,c:['red','orange','yellow','blue'][i]})).filter(x=>x.v);
+  const resolvedAll=S.hist.resolved+S.resolvedToday,rate=Math.round(resolvedAll/(resolvedAll+activeIncs().length)*100);
+  const util=Math.round(S.teams.filter(t=>t.avail==='DEPLOYED').length/S.teams.length*100);
+  const people=S.hist.people+S.incidents.filter(i=>i.status==='RESOLVED').reduce((a,i)=>a+i.people,0);
+  return {byType,pri,rate,util,people,week:S.week};
+}
+function lineChart(vals){
+  const w=340,h=120,p=10,mx=Math.max(...vals),n=vals.length;
+  const pts=vals.map((v,i)=>[p+i*(w-2*p)/(n-1),h-p-(v/mx)*(h-2*p)]);
+  const d=pts.map((pt,i)=>(i?'L':'M')+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h+22}" style="width:100%">
+    <path d="${d} L${pts[n-1][0]},${h-p} L${pts[0][0]},${h-p} Z" fill="rgba(77,159,255,.09)"/>
+    <path d="${d}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/>
+    ${pts.map(pt=>`<circle cx="${pt[0]}" cy="${pt[1]}" r="3" fill="var(--blue)"/>`).join('')}
+    ${['MON','TUE','WED','THU','FRI','SAT','TODAY'].map((l,i)=>`<text x="${p+i*(w-2*p)/(n-1)}" y="${h+14}" text-anchor="middle" fill="#5C6D8E" font-family="JetBrains Mono" font-size="8.5">${l}</text>`).join('')}
+  </svg>`;
+}
+function hbar(items){
+  const mx=Math.max(...items.map(i=>i.v),1);
+  return `<div class="hbar">${items.map(i=>`<div class="hrow"><span class="hl">${esc(i.l)}</span><div class="htrack"><i style="width:${i.v/mx*100}%;background:var(--${i.c})"></i></div><span class="hv mono">${i.v}</span></div>`).join('')}</div>`;
+}
+function donut(items){
+  const tot=items.reduce((a,b)=>a+b.v,0)||1,C=2*Math.PI*40;let acc=0;
+  const segs=items.map(i=>{const len=i.v/tot*C,s=`<circle cx="60" cy="60" r="40" fill="none" stroke="var(--${i.c})" stroke-width="15" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(C/4-acc).toFixed(2)}"><title>${esc(i.l)}: ${i.v}</title></circle>`;acc+=len;return s;}).join('');
+  return `<div class="donut-wrap"><svg viewBox="0 0 120 120" class="donut">${segs}<circle cx="60" cy="60" r="31" fill="var(--surface)"/></svg>
+  <div class="dleg">${items.map(i=>`<div><i style="background:var(--${i.c})"></i>${esc(i.l)} <b class="mono" style="color:var(--text)">${i.v}</b></div>`).join('')}</div></div>`;
+}
+const viewAnalytics=()=>{
+  const d=analyticsData();
+  return `
+  <div class="page-head" data-anim><div><h2>Analytics & Insights</h2><div class="sub">Every metric is live — it changes as you coordinate the response.</div></div></div>
+  <div class="metrics m4">
+    ${stat('RESOLUTION RATE',d.rate,'check','green','%')}
+    ${stat('AVG RESPONSE TIME',17,'clock','blue',' min')}
+    ${stat('TEAM UTILIZATION',d.util,'helmet','orange','%')}
+    ${stat('PEOPLE HELPED',d.people,'users','teal')}
+  </div>
+  <div class="ana-grid">
+    <div class="card" data-anim><div class="mini-h">INCIDENTS BY TYPE</div>${hbar(d.byType)}</div>
+    <div class="card" data-anim><div class="mini-h">PRIORITY DISTRIBUTION · ALL CASES</div>${donut(d.pri)}</div>
+    <div class="card" data-anim><div class="mini-h">RESOLUTIONS · LAST 7 DAYS</div>${lineChart(d.week)}<div class="wk-lab"><span>LOWEST 9 · WED</span><span>PEAK ${Math.max(...d.week)} · TODAY</span></div></div>
+    <div class="card" data-anim><div class="mini-h">SHELTER OCCUPANCY</div>
+      ${hbar(S.shelters.map(sh=>({l:sh.name,v:Math.round(sh.occ/sh.cap*100),c:shelterStatus(sh)==='FULL'?'red':shelterStatus(sh)==='NEAR FULL'?'orange':shelterStatus(sh)==='LIMITED CAPACITY'?'yellow':'green'})))}
+    </div>
+    <div class="card" data-anim><div class="mini-h">RESOURCE AVAILABILITY %</div>
+      ${hbar(S.resources.map(r=>({l:r.name,v:Math.round(r.available/r.total*100),c:resStatus(r)==='CRITICAL'?'red':resStatus(r)==='LOW'?'yellow':'teal'})))}
+    </div>
+    <div class="card" data-anim><div class="mini-h">TEAM STATUS</div>
+      ${hbar([{l:'Deployed',v:S.teams.filter(t=>t.avail==='DEPLOYED').length,c:'orange'},{l:'Available',v:S.teams.filter(t=>t.avail==='AVAILABLE').length,c:'green'}])}
+      <p class="faint" style="font-size:12px">Assigning a team moves it to Deployed automatically; resolving its incident releases it back.</p>
+    </div>
+  </div>`;
+};
+const viewSettings=()=>`
+  <div class="page-head" data-anim><div><h2>System Settings & Demo</h2><div class="sub">Prototype controls — everything runs locally in your browser.</div></div></div>
+  <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px" class="settings-grid">
+    <div class="col-stack">
+      <div class="card" data-anim style="border-color:rgba(47,214,163,.4)">
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+          <div class="stat-ic c-green" style="width:44px;height:44px">${ico('play',19)}</div>
+          <div><h3 style="font-size:17px">Run Full Demo Scenario</h3>
+          <p class="muted" style="font-size:13.5px;margin-top:4px">Simulates a complete closed loop: citizen flood SOS → CRITICAL assessment → command alert → team dispatch → resource allocation → live tracking → en route → rescue → shelter → resolved. The screen auto-tours through each perspective.</p></div>
+        </div>
+        ${S.demo.running?`<button class="btn btn-danger" data-act="demoStop">${ico('pause',15)} Stop scenario</button>`:
+        `<button class="btn btn-green lg" data-act="demoRun" ${S.demo.done?'disabled':''}>${ico('play',16)} ${S.demo.done?'Scenario complete — reset data to rerun':'Run Demo Scenario'}</button>`}
+      </div>
+      <div class="card" data-anim><div class="mini-h">DEMO CHECKLIST · CLOSED-LOOP STEPS</div>
+        ${['New flood SOS submitted by citizen','Priority Engine assesses incident as CRITICAL','Command center alert issued','Incident enters critical priority queue','Decision-support insights reviewed','Nearest water-rescue team assigned','Team status changed to DEPLOYED','Emergency resources allocated','Citizen tracking page updates live','Team status: EN ROUTE','Rescue operation in progress','Evacuees assigned to shelter','Incident RESOLVED — loop closed'].map((s,i)=>`
+        <div style="display:flex;gap:10px;padding:7px 0;font-size:13.5px;align-items:center;${S.demo.idx>i?'color:var(--muted)':''}">
+          <span class="stat-ic ${S.demo.idx>i?'c-green':'c-blue'}" style="width:22px;height:22px;border-radius:7px;font-size:10px">${S.demo.idx>i?ico('check',11):i+1}</span>${s}</div>`).join('')}
+      </div>
+      <div class="card" data-anim><div class="mini-h">DATA & PERSISTENCE</div>
+        <div class="kv"><span class="k">Storage</span><span class="v">localStorage · survives reload</span></div>
+        <div class="kv"><span class="k">State size</span><span class="v mono">${(JSON.stringify(S).length/1024).toFixed(1)} KB</span></div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn" data-act="resetConfirm">${ico('refresh',14)} Reset demo data</button>
+          <button class="btn btn-ghost" data-act="toggleRM">${S.prefs.rm?'Disable':'Enable'} reduced motion</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-stack">
+      <div class="card" data-anim><div class="mini-h">ABOUT SAFELOOP</div>
+        <p style="font-size:14px;margin-bottom:10px">"From SOS to Safe — a closed-loop system for coordinated disaster response."</p>
+        <p class="muted" style="font-size:13px">A closed-loop disaster response ecosystem that connects reporting, prioritization, coordination, deployment and resolution in one intelligent platform.</p>
+        <div style="margin-top:14px"><span class="fac">Frontend-only prototype</span><span class="fac">Simulated live data</span><span class="fac">localStorage persistence</span><span class="fac">anime.js motion</span></div>
+      </div>
+      <div class="card" data-anim><div class="mini-h">SUGGESTED DEMO SCRIPT</div>
+        <div class="tl" style="font-size:13px">
+          <div class="tl-item hl"><div class="tl-t">1. Run the Demo Scenario here — watch the full loop auto-tour.</div></div>
+          <div class="tl-item"><div class="tl-t">2. Or go manual: Citizen → SOS → submit a trapped/medical case.</div></div>
+          <div class="tl-item"><div class="tl-t">3. Switch to Command Center → assign team, resources, shelter.</div></div>
+          <div class="tl-item"><div class="tl-t">4. Switch back to Citizen → the timeline has advanced live.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>@media(max-width:1050px){.settings-grid{grid-template-columns:1fr!important}}</style>`;
+
+/* ---- OTHER ROLES ---- */
+const viewTeam=()=>{
+  const t=getTeam('T4'),inc=t&&t.mission?getInc(t.mission):null;
+  return `${dashMetrics()}
+  <div class="page-head" data-anim><div><h2>My Mission — ${t?esc(t.name):'—'}</h2><div class="sub">${t?esc(t.spec)+' · '+esc(t.loc)+' · '+t.cap+' members':''}</div></div>${t?sBadge(t.avail):''}</div>
+  ${t&&inc?`<div class="detail-grid">
+    <div class="col-stack">
+      <div class="card" data-anim><div class="mini-h">ASSIGNED INCIDENT · ${inc.id}</div>
+        <h3 style="font-size:18px;margin-bottom:6px">${typeIcon(inc.type,18)} ${esc(inc.type)}</h3>
+        <p class="muted" style="font-size:14px;margin-bottom:12px">${esc(inc.desc)}</p>
+        <div class="kv"><span class="k">Location</span><span class="v">${esc(inc.location)}</span></div>
+        <div class="kv"><span class="k">Priority</span><span class="v">${inc.priority} · ${inc.score}/100</span></div>
+        <div class="kv"><span class="k">People affected</span><span class="v mono">${inc.people}</span></div>
+        <div class="kv"><span class="k">Command status</span><span class="v">${inc.status}</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+          ${inc.status==='TEAM ASSIGNED'?`<button class="btn btn-primary" data-act="teamAdv" data-id="${inc.id}" data-to="EN ROUTE">${ico('send',15)} Depart — EN ROUTE</button>`:''}
+          ${inc.status==='EN ROUTE'?`<button class="btn btn-primary" data-act="teamAdv" data-id="${inc.id}" data-to="RESCUE IN PROGRESS">${ico('zap',15)} Begin rescue operation</button>`:''}
+          ${inc.status==='RESCUE IN PROGRESS'&&!inc.shelter?`<button class="btn btn-primary" data-act="teamEvac" data-id="${inc.id}">${ico('home',15)} Evacuate to shelter</button>`:''}
+          <button class="btn btn-green" data-act="resolve" data-id="${inc.id}">${ico('check',15)} Hand over — mark resolved</button>
+        </div>
+      </div>
+      <div class="card" data-anim><div class="mini-h">MISSION TIMELINE</div><div class="tl">
+        ${[...inc.timeline].reverse().map((e,i)=>`<div class="tl-item ${i===0?'hl':''}"><div class="tt mono">${fmtT(e.ts)}</div><div class="tl-t">${esc(e.label)}</div></div>`).join('')}
+      </div></div>
+    </div>
+    <div class="col-stack" data-anim>
+      <div class="card"><div class="mini-h">EQUIPMENT MANIFEST</div>${t.equip.map(e=>`<div class="kv"><span class="k">${esc(e)}</span><span class="v" style="color:var(--green)">${ico('check',13)}</span></div>`).join('')}</div>
+      <div class="card"><div class="mini-h">ALLOCATION FOR THIS MISSION</div>
+        ${inc.resources.length?inc.resources.map(r=>`<div class="kv"><span class="k">${esc(r.name)}</span><span class="v mono">${r.qty} ${r.unit}</span></div>`).join(''):'<div class="muted" style="font-size:13px">No resources attached yet — request via command center.</div>'}
+      </div>
+    </div>
+  </div>`:
+  `<div class="card empty" data-anim><div class="ic">${ico('helmet',22)}</div><b style="font-size:16px">No active mission</b><p class="muted" style="margin:8px 0">Your team is AVAILABLE. The command center will dispatch you when a matching incident is prioritized.</p></div>`}`;
+};
+const viewVol=()=>{
+  const me=S.volunteers.find(v=>v.id==='V2');
+  return `<div class="page-head" data-anim><div><h2>Volunteer Desk — ${me?esc(me.name):'—'}</h2><div class="sub">${me?esc(me.skills.join(', '))+' · '+esc(me.loc):''}</div></div>${me?sBadge(me.avail):''}</div>
+  <div class="card" data-anim style="margin-bottom:16px"><div class="mini-h">OPEN RESPONSE NEEDS · JOIN THE LOOP</div>
+    ${opportunities().length?opportunities().map(o=>`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:13px 0;border-bottom:1px dashed var(--line)">
+      <div class="stat-ic c-${o.inc.priority==='CRITICAL'?'red':'orange'}" style="width:38px;height:38px">${typeIcon(o.inc.type,16)}</div>
+      <div style="flex:1"><b>${esc(o.inc.type).toUpperCase()} · ${esc(o.inc.location)}</b><div class="muted" style="font-size:12.5px">Needs: ${o.skills.join(' + ')} · ${o.joined}/${o.need} joined</div></div>
+      ${me&&me.avail==='AVAILABLE'?`<button class="btn sm btn-green" data-act="joinSelf" data-id="${o.inc.id}">${ico('heart',14)} Join Response</button>`:`<span class="muted" style="font-size:13px">${me&&me.incident?'You are already assigned to '+me.incident:'Unavailable'}</span>`}
+    </div>`).join(''):`<div class="empty" style="padding:22px"><div class="ic">${ico('check',18)}</div>No open volunteer needs right now.</div>`}
+  </div>
+  <div class="card" data-anim>${me&&me.avail==='ASSIGNED'&&getInc(me.incident)?`<div class="mini-h">MY ASSIGNMENT · ${me.incident}</div>
+    <b>${esc(getInc(me.incident).type)} — ${esc(getInc(me.incident).location)}</b>
+    <div style="margin-top:6px">${sBadge(getInc(me.incident).status)}</div>`:`<div class="muted" style="font-size:14px;display:flex;gap:10px;align-items:center">${ico('check',18)} You are AVAILABLE. Joining an assignment updates the incident timeline and notifies the command center instantly.</div>`}</div>`;
+};
+const viewShelterC=()=>{
+  const sh=getShelter('S1');if(!sh)return '<div class="card empty">Shelter not found.</div>';
+  const p=Math.round(sh.occ/sh.cap*100);
+  return `<div class="page-head" data-anim><div><h2>Shelter Ops — ${esc(sh.name)}</h2><div class="sub">${esc(sh.loc)} · ${sh.fac.join(' · ')}</div></div>${sBadge(shelterStatus(sh))}</div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px" class="settings-grid">
+    <div class="card" data-anim><div class="mini-h">CAPACITY MANAGEMENT</div>
+      <div class="score-hero"><div><div class="score-num" style="font-size:42px">${p}%</div><div class="mono faint" style="font-size:10.5px">OCCUPANCY</div></div><div style="flex:1">${bar(p,p>=80?'orange':'green')}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0">
+        <div class="card" style="background:var(--bg2)"><div class="stat-v" style="font-size:24px">${sh.cap}</div><div class="stat-l">CAPACITY</div></div>
+        <div class="card" style="background:var(--bg2)"><div class="stat-v" style="font-size:24px">${sh.occ}</div><div class="stat-l">OCCUPANCY</div></div>
+        <div class="card" style="background:var(--bg2)"><div class="stat-v" style="font-size:24px;color:var(--green)">${sh.cap-sh.occ}</div><div class="stat-l">AVAILABLE</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1;min-width:140px"><label class="muted" style="font-size:12.5px;font-weight:600">Check in evacuees</label>
+        <input class="inp" id="evN" type="number" min="1" max="${Math.max(1,sh.cap-sh.occ)}" value="1"></div>
+        <button class="btn btn-primary" data-act="shCheckin">Check in</button>
+      </div>
+      ${sh.cap-sh.occ===0?`<p style="color:var(--red);font-size:13px;margin-top:10px">${ico('alert',14)} Shelter is FULL — notify command to redirect arrivals.</p>`:''}
+    </div>
+    <div class="col-stack" data-anim>
+      <div class="card"><div class="mini-h">INCOMING TRANSFERS</div>
+        <div class="card" style="background:var(--bg2);margin-bottom:10px"><b>12 evacuees inbound</b><div class="muted" style="font-size:12.5px">from Riverside Sector · DM-201 · ETA 10 min</div>
+        <button class="btn sm btn-green" data-act="acceptTransfer" style="margin-top:10px">${ico('check',13)} Accept transfer</button></div>
+        <div class="card" style="background:var(--bg2)"><b>Medical team visit</b><div class="muted" style="font-size:12.5px">Medical Response Bravo · routine check · ETA 40 min</div></div>
+      </div>
+      <div class="card"><div class="mini-h">NETWORK STATUS</div>
+        ${S.shelters.map(s2=>`<div class="kv"><span class="k">${esc(s2.name)}</span><span class="v">${s2.occ}/${s2.cap}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <style>@media(max-width:1050px){.settings-grid{grid-template-columns:1fr!important}}</style>`;
+};
+
+/* ---------------- ROUTER ---------------- */
+function navGuard(base){
+  if(['command','incidents','incident','map','teams','resources','volunteers','analytics'].includes(base)&&S.role!=='command')S.role='command';
+  if(['citizen','track','alerts','sos'].includes(base)&&!['citizen','team','volunteer','shelter','command'].includes(S.role))S.role='citizen';
+  if(base==='team')S.role='team';if(base==='vol')S.role='volunteer';if(base==='shelterc')S.role='shelter';
+}
+function render(){
+  const h=location.hash.replace(/^#\/?/,''),parts=h.split('/').filter(Boolean);
+  const base=parts[0]||'',param=parts[1]||'';
+  if(base!=='roles'&&base!=='')navGuard(base);
+  RM=RM0||S.prefs.rm;
+  /* SOS re-entry: starting a fresh SOS after a previous one resets the wizard (keeps contact info) */
+  if(base==='sos'&&UI.lastRoute!=='sos'&&(UI.sos.done||UI.sos.step===4)){
+    UI.sos={step:1,type:null,phase:'scan',done:null,form:UI.sos.form};
+  }
+  const app=$('#app');let html='',mount=null;
+  switch(base){
+    case '':html=viewLanding();mount=mountLanding;break;
+    case 'roles':html=viewRoles();mount=()=>pageIn();break;
+    case 'citizen':html=viewCitizen();mount=()=>pageIn();break;
+    case 'sos':html=viewSOS();mount=mountSOS;break;
+    case 'track':html=viewTrack();mount=()=>pageIn();break;
+    case 'alerts':html=viewAlerts();mount=()=>pageIn();break;
+    case 'shelters':html=(S.role==='citizen')
+        ? citizenNav('shelters')+`<div class="cit-main">${viewShelters()}</div>`
+        : shellHTML('Shelters',viewShelters(),'/shelters');
+      mount=()=>pageIn();break;
+    case 'command':html=shellHTML('Command Dashboard',viewCommand(),'/command');mount=()=>pageIn();break;
+    case 'map':html=shellHTML('Emergency Map',viewMapPage(),'/map');mount=()=>pageIn();break;
+    case 'incidents':html=shellHTML('Incidents',viewIncidents(),'/incidents');mount=()=>pageIn();break;
+    case 'incident':html=shellHTML('Incident '+param,viewIncident(param),'/incidents');mount=()=>{pageIn();mountIncident(param);};break;
+    case 'teams':html=shellHTML('Rescue Teams',viewTeams(),'/teams');mount=()=>pageIn();break;
+    case 'resources':html=shellHTML('Resources',viewResources(),'/resources');mount=()=>pageIn();break;
+    case 'volunteers':html=shellHTML('Volunteers',viewVolunteers(),'/volunteers');mount=()=>pageIn();break;
+    case 'analytics':html=shellHTML('Analytics',viewAnalytics(),'/analytics');mount=()=>pageIn();break;
+    case 'settings':html=shellHTML('Settings & Demo',viewSettings(),'/settings');mount=()=>pageIn();break;
+    case 'team':html=shellHTML('My Mission',viewTeam(),'/team');mount=()=>pageIn();break;
+    case 'vol':html=shellHTML('Volunteer Desk',viewVol(),'/vol');mount=()=>pageIn();break;
+    case 'shelterc':html=shellHTML('Shelter Ops',viewShelterC(),'/shelterc');mount=()=>pageIn();break;
+    default:html=viewLanding();mount=mountLanding;
+  }
+  app.innerHTML=html+demoBarHTML();
+  if(mount)mount();
+  counters();
+  updateBell();tickClock();
+  document.body.classList.toggle('demo-on',S.demo.running||S.demo.done);
+  window.scrollTo(0,0);
+  const c=$('#content');if(c)c.scrollTop=0;
+  document.body.classList.remove('nav-open');
+  UI.lastRoute=base||'landing';
+}
+function mountLanding(){
+  pageIn();
+  ani({targets:'#hubSvg line',strokeDashoffset:[anime.setDashoffset,0],duration:1400,delay:anime.stagger(130),easing:'easeInOutSine'});
+  ani({targets:'#hubSvg .hn',scale:[0,1],opacity:[0,1],duration:650,delay:anime.stagger(110,{start:450}),easing:'easeOutBack'});
+  if(!RM){
+    ani({targets:'#hubSvg .hn-f',translateY:[-4,4],duration:2600,direction:'alternate',loop:true,easing:'easeInOutSine',delay:anime.stagger(220)});
+    ani({targets:'.loopRing',strokeDashoffset:[anime.setDashoffset,0],rotate:[0,360],duration:6400,loop:true,easing:'linear'});
+  }
+}
+function mountIncident(id){
+  const inc=getInc(id),big=$('#scoreBig');
+  if(big&&inc)ani({targets:big,innerText:[0,inc.score],round:1,duration:900,easing:'easeOutExpo'});
+}
+let sosScanTimer=null;
+function mountSOS(){
+  const st=UI.sos;
+  pageIn();
+  if(st.step===3&&st.phase==='scan'){
+    ani({targets:'#scanline',top:['0%','100%'],duration:900,loop:true,easing:'easeInOutSine'});
+    clearTimeout(sosScanTimer);
+    sosScanTimer=setTimeout(()=>{
+      if(UI.sos.step===3&&UI.sos.phase==='scan'&&location.hash.replace(/^#\/?/,'').startsWith('sos')){
+        UI.sos.phase='result';render();
+      }
+    },1700);
+  }
+  if(st.step===3&&st.phase==='result'){
+    const a=st.assess;
+    ani({targets:'#scoreNum',innerText:[0,a.score],round:1,duration:1100,easing:'easeOutExpo'});
+    ani({targets:'#scoreBar',width:a.score+'%',duration:1100,easing:'easeOutExpo'});
+    ani({targets:'#priWord',scale:[.7,1],opacity:[0,1],duration:520,easing:'easeOutBack'});
+    ani({targets:'.insight,.factor',opacity:[0,1],translateY:[8,0],duration:400,delay:anime.stagger(50,{start:300}),easing:'easeOutQuad'});
+  }
+  if(st.step===4){
+    const p=$('#succCheck path');
+    if(p)ani({targets:p,strokeDashoffset:[anime.setDashoffset,0],duration:600,easing:'easeOutCubic'});
+    ani({targets:'.succ-check',scale:[.6,1],opacity:[0,1],duration:520,easing:'easeOutBack'});
+    ani({targets:'.req-id',opacity:[0,1],translateY:[8,0],duration:450,delay:250,easing:'easeOutCubic'});
+  }
+}
+function demoBarHTML(){
+  if(!S.demo.running&&!S.demo.done)return '';
+  const L=['New flood SOS submitted by citizen','Priority Engine assesses CRITICAL','Command center alert issued','Incident enters critical queue','Decision-support insights reviewed','Nearest water-rescue team assigned','Team status: DEPLOYED','Emergency resources allocated','Citizen tracking updates live','Team status: EN ROUTE','Rescue operation in progress','Evacuees assigned to shelter','Incident RESOLVED — loop closed'];
+  if(S.demo.done)return `<div class="demo-bar" style="border-color:rgba(47,214,163,.5)"><span class="stat-ic c-green" style="width:30px;height:30px;border-radius:9px">${ico('check',15)}</span>
+    <div><div class="dt">DEMO SCENARIO COMPLETE</div><div class="ds">Full closed loop demonstrated — SOS to Safe.</div></div>
+    <button class="btn sm btn-ghost" data-act="demoDismiss">Dismiss</button></div>`;
+  const i=Math.max(0,Math.min(S.demo.idx,13)-1);
+  return `<div class="demo-bar"><span class="spin"></span>
+    <div><div class="dt">DEMO SCENARIO · STEP ${Math.min(S.demo.idx,13)}/13</div><div class="ds">${L[i]||'Running…'}</div></div>
+    <button class="btn sm btn-ghost" data-act="demoStop">${ico('x',13)} Stop</button></div>`;
+}
+
+/* ---------------- DEMO SCENARIO ---------------- */
+let demoT=[];
+function runDemo(){
+  if(S.demo.running||S.demo.done)return;
+  S.demo.running=true;S.demo.idx=0;save();
+  const data={mode:'sos',type:'Flood',name:'Aisha Rahman',contact:'555-0142',location:'Riverside Sector · Block D',people:6,injuries:'severe',danger:'extreme',trapped:true,vulnerable:true,desc:'DEMO — Floodwater surrounding a two-storey home. Six residents on the upper floor, water still rising. Elderly grandmother cannot use stairs.',notes:'Access via back lane only.'};
+  const tour=['/track','/track','/command','/command','/command','/command','/teams','/resources','/track','/track','/incidents','/shelters','/analytics'];
+  const step=(i,fn)=>{demoT.push(setTimeout(()=>{ if(!S.demo.running)return; fn(); S.demo.idx=i; save(); const r=tour[i-1]; if(r)go(r); else render(); },i*2500+700));};
+  step(1,()=>{const inc=createIncident(data);UI.demoId=inc.id;UI.trackId=inc.id;});
+  step(2,()=>setStatus(UI.demoId,'UNDER REVIEW'));
+  step(3,()=>setStatus(UI.demoId,'PRIORITY ASSESSED'));
+  step(4,()=>{notif('critical','Critical queue updated',UI.demoId+' entered the top of the priority queue (score '+getInc(UI.demoId).score+').');save();});
+  step(5,()=>{notif('info','Decision support reviewed','Command reviewed priority insights for '+UI.demoId+'.');save();});
+  step(6,()=>{const t=S.teams.find(x=>x.avail==='AVAILABLE'&&x.spec.includes('Water'))||S.teams.find(x=>x.avail==='AVAILABLE');if(t)assignTeam(UI.demoId,t.id);});
+  step(7,()=>{const inc=getInc(UI.demoId);if(inc&&inc.team){const t=getTeam(inc.team);if(t)notif('info','Team deployed',t.name+' status: DEPLOYED.');}save();});
+  step(8,()=>{allocateResource(UI.demoId,'R1',60);allocateResource(UI.demoId,'R2',8);});
+  step(9,()=>{notif('success','Citizen update pushed','Tracking page reflects every change in real time.');save();});
+  step(10,()=>setStatus(UI.demoId,'EN ROUTE'));
+  step(11,()=>setStatus(UI.demoId,'RESCUE IN PROGRESS'));
+  step(12,()=>{const inc=getInc(UI.demoId);assignEvacuees('S1',inc?inc.people:6,UI.demoId);setStatus(UI.demoId,'EVACUATED');});
+  step(13,()=>setStatus(UI.demoId,'RESOLVED'));
+  demoT.push(setTimeout(()=>{ if(!S.demo.running)return; S.demo.running=false;S.demo.done=true;notif('success','Demo scenario complete','From SOS to Safe — every stage of the closed loop was demonstrated.');save();render();},14*2500+900));
+}
+function stopDemo(){demoT.forEach(clearTimeout);demoT=[];S.demo.running=false;S.demo.idx=0;save();render();toast('Demo scenario stopped.','t-blue');}
+
+/* ---------------- ACTIONS ---------------- */
+const ACTIONS={
+  go:(id,el)=>go(el.dataset.to),
+  scrollTo:(id,el)=>{const t=document.getElementById(el.dataset.to);if(t)t.scrollIntoView({behavior:RM?'auto':'smooth'});},
+  nav:()=>document.body.classList.toggle('nav-open'),
+  pickRole:(id,el)=>{S.role=el.dataset.role;save();go(roleHome(S.role));toast('Entering as <b>'+esc(el.querySelector('h3').textContent)+'</b>','t-green');},
+  openDrawer:()=>openDrawer(),closeDrawer:()=>closeDrawer(),
+  markRead:(id,el)=>{const n=S.notifications.find(x=>x.id===el.dataset.id);if(n){n.read=true;save();el.classList.remove('unread');updateBell();}},
+  markAllRead:()=>{S.notifications.forEach(n=>n.read=true);save();const d=$('#drawer');if(d){d.remove();const o=$('#drawerOv');if(o)o.remove();}openDrawer();updateBell();},
+  clearNotifs:()=>{S.notifications=[];save();closeDrawer(true);openDrawer();updateBell();},
+  selInc:(id,el)=>selectIncident(el.dataset.id),
+  deselInc:()=>selectIncident(null),
+  selTeam:(id,el)=>{const t=getTeam(el.dataset.id);if(!t)return;if(t.mission&&getInc(t.mission))selectIncident(t.mission);else toast(esc(t.name)+' is standing by at '+esc(t.loc),'t-blue');},
+  selShelter:(id,el)=>{const sh=getShelter(el.dataset.id);if(sh)toast(esc(sh.name)+' — occupancy '+sh.occ+'/'+sh.cap,'t-blue');},
+  incTab:(id,el)=>{UI.f.tab=el.dataset.id;$$('.tab').forEach(t=>t.classList.toggle('active',t===el));const l=$('#incList');if(l)l.innerHTML=incListHTML();},
+  assignOpen:incId=>{const inc=getInc(incId||UI.sel);if(!inc)return;
+    const av=S.teams.filter(t=>t.avail==='AVAILABLE');
+    openModal(`<h3>Assign response team</h3><p class="msub">${inc.id} · ${esc(inc.type)} · ${inc.priority} — nearest suitable unit will be marked.</p>
+    ${av.length?av.map(t=>`<div class="queue-item" data-act="assignDo" data-id="${t.id}" data-rid="${inc.id}">
+      <div class="stat-ic c-blue" style="width:36px;height:36px">${ico('helmet',16)}</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:14px">${esc(t.name)}</div><div class="ql">${esc(t.spec)} · ${esc(t.loc)} · ${t.cap} members</div></div>
+      ${inc.type.includes(t.spec.split(' ')[0])?'<span class="badge b-green"><i></i>BEST MATCH</span>':''}
+    </div>`).join(''):`<div class="empty"><div class="ic">${ico('helmet',20)}</div>All teams are currently deployed.<br><span class="faint" style="font-size:12.5px">Resolve an incident to release a team, or escalate for mutual aid.</span></div>`}
+    <button class="btn btn-ghost sm" data-act="closeModal" style="margin-top:8px">Cancel</button>`);},
+  assignDo:(id,el)=>{const btn=el;btn.style.pointerEvents='none';btn.innerHTML='<span class="spin"></span> Assigning optimal team…';
+    setTimeout(()=>{assignTeam(el.dataset.rid,el.dataset.id);closeModal();UI.sel=el.dataset.rid;render();toast(getTeam(el.dataset.id)?.name+' deployed to <b>'+el.dataset.rid+'</b>','t-green');},750);},
+  allocOpen:id=>{
+    let incId=null;
+    if(S.incidents.some(i=>i.id===id))incId=id;
+    const act=activeIncs();
+    if(!act.length){openModal(`<h3>Allocate resources</h3><div class="empty"><div class="ic">${ico('box',20)}</div>No active incidents right now.<br><span class="faint" style="font-size:12.5px">Resources can be allocated once an emergency request exists.</span></div><button class="btn btn-ghost sm" data-act="closeModal" style="margin-top:8px">Close</button>`);return;}
+    openModal(`<h3>Allocate resources</h3><p class="msub">Select an active incident, a resource and quantity. Availability updates network-wide.</p>
+    <div class="fgrid">
+      <div class="fg"><label>Incident</label><select class="inp" id="alInc">${act.map(i=>`<option value="${i.id}" ${incId===i.id?'selected':''}>${i.id} · ${esc(i.type)} (${i.priority})</option>`).join('')}</select></div>
+      <div class="fg"><label>Resource</label><select class="inp" id="alRes">${S.resources.map(r=>`<option value="${r.id}" ${id===r.id?'selected':''}>${r.name} — ${r.available} ${r.unit} available</option>`).join('')}</select></div>
+      <div class="fg"><label>Quantity</label><input class="inp" id="alQty" type="number" min="1" value="10"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-ghost" data-act="closeModal">Cancel</button>
+      <button class="btn btn-primary" data-act="allocDo">${ico('send',14)} Confirm allocation</button></div>`);},
+  allocDo:()=>{
+    const incId=$('#alInc')?.value,resId=$('#alRes')?.value,qty=+($('#alQty')?.value||0);
+    const r=S.resources.find(x=>x.id===resId);
+    if(!incId){toast('Select an incident.','t-red');return;}
+    if(!qty||qty<1){toast('Enter a valid quantity.','t-red');return;}
+    if(r&&qty>r.available){toast('Only '+r.available+' '+r.unit+' available.','t-red');return;}
+    if(allocateResource(incId,resId,qty)){closeModal();render();toast(qty+' units allocated to <b>'+incId+'</b>','t-green');}
+  },
+  shelterOpen:incId=>{const inc=getInc(incId||UI.sel);if(!inc)return;
+    const free=S.shelters.filter(s=>s.occ<s.cap);
+    openModal(`<h3>Assign shelter</h3><p class="msub">Move up to ${inc.people} evacuees from ${inc.id} into a shelter with free space.</p>
+    ${free.length?`<div class="fg"><label>Shelter</label><select class="inp" id="shSel">${free.map(s=>`<option value="${s.id}">${esc(s.name)} — ${s.cap-s.occ} spaces (${s.occ}/${s.cap})</option>`).join('')}</select></div>
+    <div class="fg" style="margin-top:12px"><label>Evacuees</label><input class="inp" id="shQty" type="number" min="1" max="${inc.people}" value="${inc.people}"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end"><button class="btn btn-ghost" data-act="closeModal">Cancel</button>
+    <button class="btn btn-primary" data-act="shelterDo" data-id="${inc.id}">${ico('home',14)} Confirm transfer</button></div>`:
+    `<div class="empty"><div class="ic">${ico('home',20)}</div>All shelters are at full capacity.</div><button class="btn btn-ghost sm" data-act="closeModal" style="margin-top:8px">Close</button>`}`);},
+  shelterDo:(id,el)=>{const n=+($('#shQty')?.value||0);
+    if(!n||n<1){toast('Enter a valid number of evacuees.','t-red');return;}
+    if(assignEvacuees($('#shSel').value,n,el.dataset.id)){closeModal();UI.sel=el.dataset.id;render();toast(n+' evacuees moved to shelter','t-green');}},
+  evacOpen:id=>{const sh=getShelter(id);if(!sh)return;
+    openModal(`<h3>Assign evacuees — ${esc(sh.name)}</h3><p class="msub">${sh.cap-sh.occ} spaces available. Capacity is enforced — over-allocation is blocked.</p>
+    <div class="fg"><label>Number of evacuees</label><input class="inp" id="evQty" type="number" min="1" max="${Math.max(1,sh.cap-sh.occ)}" value="${Math.min(10,sh.cap-sh.occ)}"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end"><button class="btn btn-ghost" data-act="closeModal">Cancel</button>
+    <button class="btn btn-primary" data-act="evacDo" data-id="${sh.id}">${ico('users',14)} Check in</button></div>`);},
+  evacDo:(id,el)=>{const n=+($('#evQty')?.value||0);
+    if(!n||n<1){toast('Enter a valid number.','t-red');return;}
+    if(assignEvacuees(el.dataset.id,n)){closeModal();render();toast(n+' evacuees checked in','t-green');}},
+  advStatus:(id,el)=>{const inc=getInc(id||UI.sel);if(!inc)return;
+    const ns=nextStatus(inc);
+    if(ns==='TEAM ASSIGNED'&&!inc.team){toast('Assign a team first.','t-red');return;}
+    setStatus(inc.id,ns);UI.sel=inc.id;render();
+    toast('<b>'+inc.id+'</b> → '+ns,'t-blue');},
+  resolve:(id,el)=>{const inc=getInc(id||UI.sel);if(!inc)return;
+    setStatus(inc.id,'RESOLVED');UI.sel=inc.id;render();toast('<b>'+inc.id+'</b> resolved — loop closed','t-green');},
+  escalate:(id,el)=>{const inc=getInc(id||UI.sel);if(!inc)return;escalate(inc.id);UI.sel=inc.id;render();toast('Incident escalated to <b>'+inc.priority+'</b>','t-red');},
+  dispatchOpen:id=>{const t=getTeam(id);if(!t)return;
+    const open=activeIncs().filter(i=>!i.team);
+    openModal(`<h3>Dispatch ${esc(t.name)}</h3><p class="msub">${esc(t.spec)} · ${t.cap} members · ${esc(t.loc)}</p>
+    ${open.length?open.map(i=>`<div class="queue-item" data-act="dispatchDo" data-id="${t.id}" data-rid="${i.id}">
+      <div class="stat-ic c-${i.priority==='CRITICAL'?'red':'orange'}" style="width:36px;height:36px">${typeIcon(i.type,15)}</div>
+      <div style="flex:1"><div class="qid">${i.id} · ${esc(i.type)}</div><div class="ql">${esc(i.location)} · ${i.priority} (${i.score})</div></div></div>`).join(''):
+    `<div class="empty"><div class="ic">${ico('check',20)}</div>No unassigned active incidents.<br><span class="faint" style="font-size:12.5px">All available teams are currently displayed.</span></div>`}
+    <button class="btn btn-ghost sm" data-act="closeModal" style="margin-top:8px">Cancel</button>`);},
+  dispatchDo:(id,el)=>{assignTeam(el.dataset.rid,el.dataset.id);closeModal();render();toast(getTeam(el.dataset.id)?.name+' deployed to <b>'+el.dataset.rid+'</b>','t-green');},
+  volOpen:incId=>{const inc=getInc(incId);if(!inc)return;
+    const av=S.volunteers.filter(v=>v.avail==='AVAILABLE');
+    const skills=TYPE_SKILLS[inc.type]||[];
+    openModal(`<h3>Assign volunteers</h3><p class="msub">${inc.id} · ${esc(inc.type)} — skill-matched volunteers are highlighted.</p>
+    ${av.length?av.map(v=>`<div class="queue-item" data-act="volDo" data-id="${v.id}" data-rid="${incId}">
+      <div class="stat-ic c-teal" style="width:36px;height:36px">${ico('heart',15)}</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:14px">${esc(v.name)}</div><div class="ql">${v.skills.join(', ')} · ${esc(v.loc)}</div></div>
+      ${v.skills.some(s=>skills.includes(s))?'<span class="badge b-green"><i></i>SKILL MATCH</span>':''}</div>`).join(''):
+    `<div class="empty"><div class="ic">${ico('heart',20)}</div>No volunteers available right now.</div>`}
+    <button class="btn btn-ghost sm" data-act="closeModal" style="margin-top:8px">Cancel</button>`);},
+  volDo:(id,el)=>{if(joinResponse(el.dataset.id,el.dataset.rid)){closeModal();render();toast('Volunteer joined the response','t-green');}},
+  joinSelf:(id,el)=>{if(joinResponse('V2',el.dataset.id)){render();toast('You joined <b>'+el.dataset.id+'</b> — command notified','t-green');}},
+  sosPick:(id,el)=>{UI.sos.type=el.dataset.id;$$('.cat').forEach(c=>c.classList.toggle('sel',c===el));const b=$('[data-act="sosNext"]');if(b)b.disabled=false;},
+  sosNext:()=>{UI.sos.step=2;render();},
+  sosBack:()=>{UI.sos.step=Math.max(1,UI.sos.step-1);if(UI.sos.step<3)UI.sos.phase='scan';render();},
+  sosAssess:()=>{
+    const name=($('#f_name')?.value||'').trim(),loc=($('#f_loc')?.value||'').trim();
+    if(!name||!loc){toast('Name and location are required to route help.','t-red');return;}
+    UI.sos.form={name,phone:$('#f_phone')?.value||'',loc,people:clamp(+$('#f_people').value||1,1,99),injury:$('#f_injury')?.value||'none',danger:$('#f_danger')?.value||'low',trapped:!!($('#f_trapped')?.checked),vuln:!!($('#f_vuln')?.checked),notes:$('#f_notes')?.value||''};
+    const d={mode:'sos',type:UI.sos.type||'Other',name,contact:UI.sos.form.phone,location:loc,people:UI.sos.form.people,injuries:UI.sos.form.injury,danger:UI.sos.form.danger,trapped:UI.sos.form.trapped,vulnerable:UI.sos.form.vuln,desc:UI.sos.form.notes};
+    UI.sos.assess={...calcPriority(d),d};
+    UI.sos.step=3;UI.sos.phase='scan';render();},
+  sosSubmit:()=>{
+    const a=UI.sos.assess;if(!a)return;
+    const inc=createIncident({...a.d,mode:'sos'});
+    UI.sos.done=inc.id;UI.trackId=inc.id;UI.sos.step=4;save();render();
+    toast('Emergency request <b>'+inc.id+'</b> received','t-green');},
+  trackSel:(id,el)=>{UI.trackId=el.dataset.id;render();},
+  directions:(id,el)=>toast('Route to <b>'+esc(el.dataset.id)+'</b> copied to navigation (simulated)','t-blue'),
+  teamAdv:(id,el)=>{setStatus(el.dataset.id,el.dataset.to);render();toast('Status updated → <b>'+el.dataset.to+'</b>','t-blue');},
+  teamEvac:id=>{const inc=getInc(id);if(!inc)return;
+    if(assignEvacuees('S1',inc.people,inc.id)){setStatus(inc.id,'EVACUATED');render();toast(inc.people+' evacuees moved to Central Community Hub','t-green');}},
+  shCheckin:()=>{const n=+($('#evN')?.value||0);if(n>0&&assignEvacuees('S1',n)){render();toast(n+' evacuees checked in','t-green');}},
+  acceptTransfer:()=>{if(assignEvacuees('S1',12)){render();toast('Transfer accepted — 12 evacuees arriving','t-green');}},
+  demoRun:()=>{runDemo();render();},
+  demoStop:()=>stopDemo(),
+  demoDismiss:()=>{S.demo.done=false;S.demo.idx=0;save();render();},
+  resetConfirm:()=>openModal(`<h3>Reset demo data?</h3><p class="msub">All incidents, assignments, allocations and notifications created during this session will be replaced with the original realistic mock dataset. This cannot be undone.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="btn btn-ghost" data-act="closeModal">Cancel</button>
+    <button class="btn btn-danger" data-act="resetDo">${ico('refresh',14)} Reset everything</button></div>`),
+  resetDo:()=>resetData(),
+  toggleRM:()=>{S.prefs.rm=!S.prefs.rm;save();render();toast('Reduced motion '+(S.prefs.rm?'enabled':'disabled'),'t-blue');},
+  closeModal:()=>closeModal()
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el)return;
+  const fn=ACTIONS[el.dataset.act];
+  if(fn)fn(el.dataset.id,el,e);
+});
+/* Keyboard activation for non-button interactive elements (e.g., category tiles) */
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target instanceof Element&&e.target.matches('[data-act][role="button"]')){
+    e.preventDefault();e.target.click();
+  }
+  if(e.key==='Escape'){closeModal();closeDrawer();}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='incSearch'){UI.f.q=e.target.value;const l=$('#incList');if(l)l.innerHTML=incListHTML();}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='fPr')UI.f.pr=e.target.value;
+  if(e.target.id==='fTy')UI.f.ty=e.target.value;
+  if(e.target.id==='fPr'||e.target.id==='fTy'){const l=$('#incList');if(l)l.innerHTML=incListHTML();}
+});
+
+/* ---------------- ROUTER PLUMBING ---------------- */
+function go(p){const t='#'+p;if(location.hash===t)render();else location.hash=t;}
+window.addEventListener('hashchange',render);
+function tickClock(){const c=$('#clock');if(c)c.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(tickClock,1000);
+
+/* ---------------- BOOT ---------------- */
+S=load();
+if(!location.hash)location.hash='#/';
+render();
+</script>
+</body>
+</html>
