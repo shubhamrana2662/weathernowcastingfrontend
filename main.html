@@ -3,14 +3,303 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SafeLoop — From SOS to Safe</title>
+<title>Pravaha — Disaster Intelligence & Emergency Response</title>
+<meta name="description" content="Pravaha is an advanced disaster intelligence and emergency response platform. Predict. Prepare. Protect. Respond."/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+
 :root{
-  --bg:#0A0F19;--bg2:#0D1322;--surface:#111A2C;--surface2:#16223A;--surface3:#1C2B48;
+  --bg:#090B0F;--bg2:#11151C;--surface:#111A2C;--surface2:#16223A;--surface3:#1C2B48;
+  --line:#202F4C;--line2:#2A3E66;
+  --text:#E9EFFA;--muted:#93A2C0;--faint:#5C6D8E;
+  --pra-blue:#4F8CFF;--pra-cyan:#39D9FF;--pra-green:#36D399;--pra-amber:#F5B942;--pra-red:#FF4D5E;
+  --red:#FF4D5E;--orange:#FF9A3D;--yellow:#F5B942;--blue:#4F8CFF;--green:#36D399;--teal:#39D9FF;
+  --r:14px;--shadow:0 14px 40px -14px rgba(0,0,0,.65);
+  --font:'Inter',system-ui,sans-serif;--disp:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+  --env-glow:rgba(79,140,255,0.14);
+}
+
+/* ==========================================================================
+   PRAVAHA BRAND SYSTEM & CINEMATIC 3D LANDING STYLES
+   ========================================================================== */
+
+/* Preloader */
+.pra-preloader{
+  position:fixed;inset:0;z-index:99999;
+  background:#090B0F;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .6s cubic-bezier(.22,1,.36,1),visibility .6s;
+  overflow:hidden;
+}
+.pra-preloader.done{opacity:0;visibility:hidden;pointer-events:none}
+.pre-ambient-glow{
+  position:absolute;width:650px;height:650px;border-radius:50%;
+  background:radial-gradient(circle,rgba(57,217,255,.18) 0%,rgba(79,140,255,.08) 40%,transparent 70%);
+  filter:blur(60px);pointer-events:none;
+}
+.pre-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px;max-width:540px;width:100%}
+.pre-emblem-wrap{position:relative;width:96px;height:96px;margin:0 auto 20px;display:grid;place-items:center}
+.pre-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(57,217,255,.4);animation:praSpin 18s linear infinite}
+.pre-pulse{position:absolute;inset:6px;border-radius:50%;border:1.5px solid rgba(79,140,255,.25);animation:praPulse 2.4s ease-out infinite}
+@keyframes praSpin{to{transform:rotate(360deg)}}
+@keyframes praPulse{0%{transform:scale(.85);opacity:.9}100%{transform:scale(1.4);opacity:0}}
+.pra-pre-logo{width:64px;height:64px}
+.pre-draw-path{stroke-dasharray:220;stroke-dashoffset:220;animation:drawPre 1.8s cubic-bezier(.22,1,.36,1) forwards}
+.pre-draw-wave1{stroke-dasharray:120;stroke-dashoffset:120;animation:drawPre 1.6s .3s cubic-bezier(.22,1,.36,1) forwards}
+.pre-draw-wave2{stroke-dasharray:120;stroke-dashoffset:120;animation:drawPre 1.6s .5s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes drawPre{to{stroke-dashoffset:0}}
+.pre-brand-title{font-family:var(--disp);font-size:28px;font-weight:800;letter-spacing:.18em;color:#fff;margin-bottom:6px}
+.pre-subtitle{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--pra-cyan);margin-bottom:8px}
+.pre-motto{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:28px}
+.pre-console{width:100%;max-width:440px;background:rgba(17,26,44,.6);border:1px solid var(--line);border-radius:12px;padding:14px 18px;text-align:left}
+.pre-progress-track{height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:12px}
+.pre-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--pra-cyan),var(--pra-blue),var(--pra-green));border-radius:99px;transition:width .2s ease}
+.pre-stat-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px}
+.pre-log{font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pre-skip-btn{margin-top:22px;color:var(--muted);font-size:12px;border:1px solid var(--line)}
+
+/* Brand Marks */
+.pra-logo-svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+.pra-brand{display:flex;align-items:center;gap:12px}
+.pra-brand-titles{display:flex;flex-direction:column;line-height:1.1}
+.pra-name{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:.12em;color:#fff}
+.pra-tag{font-size:9px;letter-spacing:.16em;color:var(--pra-cyan);margin-top:1px}
+
+/* Navbar */
+.pra-nav{
+  background:rgba(9,11,15,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(42,62,102,.35);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 5vw;position:sticky;top:0;z-index:100;
+}
+.pra-nav-links{display:flex;gap:24px;font-size:13.5px;color:var(--muted);font-weight:500}
+.pra-nav-links span{cursor:pointer;transition:color .18s,transform .18s}
+.pra-nav-links span:hover{color:#fff;transform:translateY(-1px)}
+.pra-nav-actions{display:flex;align-items:center;gap:12px}
+.pra-nav-sos{background:rgba(255,77,94,.15);border-color:rgba(255,77,94,.4);color:#FF8A94;font-weight:700}
+.pra-nav-sos:hover{background:rgba(255,77,94,.3);border-color:var(--pra-red)}
+.sos-pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--pra-red);display:inline-block;animation:softPulse 1.2s infinite}
+
+/* Hero Section */
+.pra-hero{
+  position:relative;padding:96px 5vw 80px;max-width:1380px;margin:0 auto;
+  min-height:85vh;display:flex;flex-direction:column;justify-content:center;
+}
+.pra-hero-backdrop{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 50% 20%,var(--env-glow),rgba(57,217,255,.05) 50%,transparent 85%);
+  z-index:0;
+}
+.pra-hero-grid{position:relative;z-index:1;max-width:880px}
+.pra-badge{
+  display:inline-flex;align-items:center;gap:9px;padding:6px 14px;border-radius:99px;
+  background:rgba(57,217,255,.08);border:1px solid rgba(57,217,255,.3);color:var(--pra-cyan);
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;margin-bottom:28px;
+}
+.pra-beacon{width:7px;height:7px;border-radius:50%;background:var(--pra-cyan);box-shadow:0 0 10px var(--pra-cyan);animation:softPulse 1.8s infinite}
+h1.pra-hero-h{
+  font-size:clamp(46px,6.8vw,88px);line-height:1.06;letter-spacing:-.03em;
+  font-family:var(--disp);font-weight:800;margin-bottom:22px;
+}
+.pra-grad-text{
+  background:linear-gradient(135deg,#FFFFFF 0%,#39D9FF 50%,#4F8CFF 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;
+}
+.pra-hero-sub{
+  font-size:clamp(17px,2vw,21px);color:var(--text);line-height:1.55;
+  max-width:680px;margin-bottom:18px;font-weight:400;
+}
+.pra-hero-quote{
+  display:flex;align-items:center;gap:12px;color:var(--pra-cyan);
+  font-size:13px;letter-spacing:.08em;margin-bottom:34px;
+}
+.pra-quote-bar{width:32px;height:2px;background:var(--pra-cyan);display:inline-block}
+.pra-hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:38px}
+.pra-btn-glow{box-shadow:0 0 28px -4px rgba(79,140,255,.6)}
+.pra-hero-pills{display:flex;gap:16px;flex-wrap:wrap;color:var(--faint);font-size:11.5px;letter-spacing:.1em}
+.pra-pill{display:inline-flex;align-items:center;gap:7px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot.ok{background:var(--pra-green);box-shadow:0 0 6px var(--pra-green)}
+.dot.red{background:var(--pra-red);box-shadow:0 0 6px var(--pra-red)}
+
+/* ==========================================================================
+   INTERACTIVE 3D RESPONSE CORE & SCROLL STORYTELLING
+   ========================================================================== */
+.pra-story-section{
+  position:relative;
+  background:radial-gradient(circle at 50% 30%,var(--env-glow),transparent 70%),#090B0F;
+  border-top:1px solid rgba(34,50,82,.6);
+  transition:background .6s ease;
+}
+
+/* Sticky Horizon Timeline */
+.pra-sticky-timeline{
+  position:sticky;top:68px;z-index:90;padding:12px 5vw;
+  background:rgba(9,11,15,.8);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(34,50,82,.4);
+  display:flex;justify-content:center;
+}
+.pra-tl-container{position:relative;max-width:980px;width:100%;padding:4px 0}
+.pra-tl-line{position:absolute;top:15px;left:20px;right:20px;height:2px;background:rgba(34,50,82,.7);z-index:1}
+.pra-tl-progress{height:100%;width:0%;background:linear-gradient(90deg,var(--pra-cyan),var(--pra-blue),var(--pra-green));transition:width .25s ease}
+.pra-tl-nodes{position:relative;z-index:2;display:flex;justify-content:space-between;width:100%}
+.pra-tl-node{
+  background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:6px;color:var(--faint);padding:0;outline:none;
+}
+.pra-tl-dot{
+  width:12px;height:12px;border-radius:50%;background:var(--bg2);
+  border:2px solid var(--line2);transition:all .22s ease;
+}
+.pra-tl-node:hover .pra-tl-dot{border-color:var(--pra-cyan);transform:scale(1.2)}
+.pra-tl-node.active .pra-tl-dot{
+  background:var(--pra-cyan);border-color:#fff;
+  box-shadow:0 0 12px var(--pra-cyan);transform:scale(1.3);
+}
+.pra-tl-txt{font-size:10px;letter-spacing:.12em;transition:color .2s}
+.pra-tl-node.active .pra-tl-txt{color:var(--pra-cyan);font-weight:700}
+
+/* Sticky 3D Showcase Viewport */
+.pra-showcase-sticky{
+  position:sticky;top:118px;height:calc(100vh - 118px);width:100%;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:10;
+}
+.pra-canvas-box{
+  position:relative;width:100%;height:100%;max-width:1380px;
+  display:flex;align-items:center;justify-content:center;
+}
+#coreCanvas3D{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:auto;cursor:grab;
+}
+#coreCanvas3D:active{cursor:grabbing}
+
+/* Technical Blueprint HUD Overlay */
+.pra-hud-svg{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:12;
+}
+.pra-hud-layer-tags{position:absolute;inset:0;pointer-events:none;z-index:15}
+.pra-layer-tag{
+  position:absolute;background:rgba(17,26,44,.85);backdrop-filter:blur(10px);
+  border:1px solid var(--line2);border-radius:10px;padding:8px 14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);pointer-events:none;
+  transition:all .35s cubic-bezier(.22,1,.36,1);opacity:0;transform:translateY(8px);
+}
+.pra-layer-tag.visible{opacity:1;transform:translateY(0)}
+.tag-title{display:block;font-size:11px;letter-spacing:.14em;font-weight:700;margin-bottom:2px}
+.tag-sub{display:block;font-size:10px;color:var(--muted)}
+.tag-data{top:24%;left:8%;border-color:rgba(57,217,255,.4)}.tag-data .tag-title{color:var(--pra-cyan)}
+.tag-risk{top:22%;right:8%;border-color:rgba(245,185,66,.4)}.tag-risk .tag-title{color:var(--pra-amber)}
+.tag-alert{bottom:26%;left:8%;border-color:rgba(255,77,94,.4)}.tag-alert .tag-title{color:var(--pra-red)}
+.tag-sos{top:48%;right:6%;border-color:rgba(255,77,94,.5)}.tag-sos .tag-title{color:var(--pra-red)}
+.tag-route{bottom:20%;right:8%;border-color:rgba(54,211,153,.5)}.tag-route .tag-title{color:var(--pra-green)}
+
+/* Story Chapters Over 3D Canvas */
+.pra-story-scroll{position:relative;z-index:20;max-width:1380px;margin:0 auto;padding:0 5vw}
+.pra-chapter{
+  min-height:92vh;display:flex;align-items:center;
+  padding:60px 0;pointer-events:none;
+}
+.pra-chapter:nth-child(even){justify-content:flex-end}
+.pra-chapter:nth-child(odd){justify-content:flex-start}
+.pra-chap-card{
+  pointer-events:auto;max-width:480px;width:100%;
+  background:rgba(17,26,44,.88);backdrop-filter:blur(20px);
+  border:1px solid rgba(42,62,102,.65);border-radius:20px;
+  padding:32px 30px;box-shadow:0 24px 60px -12px rgba(0,0,0,.75);
+}
+.chap-h{font-size:clamp(26px,3vw,38px);line-height:1.15;margin-bottom:14px}
+.chap-p{color:var(--muted);font-size:14.5px;line-height:1.6;margin-bottom:20px}
+.pra-chip-group{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.pra-micro-flow{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;font-size:12px;
+}
+.mf-step{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.mf-step i{color:var(--faint);font-style:normal}
+.mf-step.highlighted{color:var(--pra-cyan);font-weight:700}
+
+/* Risk Tiers Component */
+.pra-risk-tiers{display:flex;flex-direction:column;gap:8px}
+.risk-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-radius:8px;font-size:12px;font-family:var(--mono);
+  border:1px solid;
+}
+.risk-bar.low{background:rgba(54,211,153,.08);border-color:rgba(54,211,153,.3);color:var(--pra-green)}
+.risk-bar.mod{background:rgba(57,217,255,.08);border-color:rgba(57,217,255,.3);color:var(--pra-cyan)}
+.risk-bar.high{background:rgba(245,185,66,.08);border-color:rgba(245,185,66,.3);color:var(--pra-amber)}
+.risk-bar.crit{background:rgba(255,77,94,.12);border-color:rgba(255,77,94,.45);color:var(--pra-red);font-weight:700}
+
+/* Alert Cascade Component */
+.pra-alert-cascade{display:flex;flex-direction:column;gap:9px}
+.cas-step{
+  display:flex;align-items:center;gap:12px;padding:8px 12px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+}
+.cas-step.active{border-color:rgba(255,77,94,.5);background:rgba(255,77,94,.07)}
+.cas-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--pra-cyan);flex-shrink:0}
+.cas-step.active .cas-num{color:var(--pra-red)}
+.cas-info b{display:block;font-size:12.5px;line-height:1.2}
+.cas-info span{display:block;font-size:11px;color:var(--muted)}
+
+/* SOS Flow Component */
+.pra-sos-flow-box{
+  background:var(--bg2);border:1px solid rgba(255,77,94,.35);
+  border-radius:14px;padding:16px;
+}
+.sos-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sos-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 10px;
+  border-radius:99px;background:rgba(255,77,94,.15);color:#FF8A94;
+  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.08em;
+}
+.sos-blink{width:6px;height:6px;border-radius:50%;background:var(--pra-red);animation:softPulse 1s infinite}
+.sos-timeline{display:flex;flex-direction:column;gap:10px}
+.st-item{
+  display:flex;align-items:center;gap:10px;font-size:12.5px;
+  padding-bottom:8px;border-bottom:1px dashed var(--line);
+}
+.st-item:last-child{border:none;padding-bottom:0}
+.st-item.active{color:var(--pra-green);font-weight:600}
+.st-ic{
+  width:26px;height:26px;border-radius:7px;background:var(--surface2);
+  display:grid;place-items:center;color:var(--muted);flex-shrink:0;
+}
+.st-item.active .st-ic{background:rgba(54,211,153,.15);color:var(--pra-green)}
+
+/* Safe Routing Component */
+.pra-route-diag{
+  background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+  padding:16px;margin-bottom:14px;
+}
+.rd-node{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
+.rd-path{margin:10px 0 10px 14px;padding-left:14px;border-left:2px dashed var(--line);display:flex;flex-direction:column;gap:8px}
+.rd-hazard{font-size:12px;color:var(--pra-red);display:flex;align-items:center;gap:6px}
+.hazard-x{color:var(--pra-red)}
+.rd-safe{font-size:12px;color:var(--pra-green);display:flex;align-items:center;gap:6px;font-weight:600}
+.safe-chk{color:var(--pra-green)}
+.pra-route-stats{display:flex;justify-content:space-between;font-size:11px;color:var(--pra-green)}
+
+/* Cohesion Stats Component */
+.pra-cohesion-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.cs-box{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.cs-num{display:block;font-family:var(--disp);font-size:22px;font-weight:700;color:var(--pra-green)}
+.cs-lbl{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+
+@media(max-width:960px){
+  .pra-nav-links{display:none}
+  .pra-chapter:nth-child(even),.pra-chapter:nth-child(odd){justify-content:center}
+  .pra-chap-card{max-width:100%}
+  .tag-data,.tag-risk,.tag-alert,.tag-sos,.tag-route{display:none}
+}
+--bg2:#0D1322;--surface:#111A2C;--surface2:#16223A;--surface3:#1C2B48;
   --line:#223252;--line2:#2C3F66;
   --text:#E9EFFA;--muted:#93A2C0;--faint:#5C6D8E;
   --red:#FF4D5E;--orange:#FF9A3D;--yellow:#FFC94D;--blue:#4D9FFF;--green:#2FD6A3;--teal:#2FD6C4;
@@ -376,12 +665,50 @@ body.demo-on #toasts{bottom:92px}
 </style>
 </head>
 <body>
-<noscript><p style="padding:40px;font-family:sans-serif">SafeLoop requires JavaScript to run. Please enable it and reload.</p></noscript>
+<noscript><p style="padding:40px;font-family:sans-serif">Pravaha requires JavaScript to run. Please enable it and reload.</p></noscript>
+
+<div id="preloader" class="pra-preloader">
+  <div class="pre-ambient-glow"></div>
+  <div class="pre-inner">
+    <div class="pre-emblem-wrap">
+      <div class="pre-ring"></div>
+      <div class="pre-pulse"></div>
+      <svg class="pra-pre-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="preG1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#39D9FF"/>
+            <stop offset="50%" stop-color="#4F8CFF"/>
+            <stop offset="100%" stop-color="#36D399"/>
+          </linearGradient>
+        </defs>
+        <path class="pre-draw-path" d="M32 5 L54 13 V29 C54 44 43 53 32 59 C21 53 10 44 10 29 V13 Z" stroke="url(#preG1)" stroke-width="2.5" stroke-linejoin="round" fill="rgba(17,26,44,0.4)"/>
+        <path class="pre-draw-wave1" d="M18 31 C22 24, 28 37, 34 30 C40 23, 44 33, 48 27" stroke="#39D9FF" stroke-width="2.4" stroke-linecap="round"/>
+        <path class="pre-draw-wave2" d="M18 36 C23 29, 29 41, 35 34 C41 27, 45 37, 48 32" stroke="#4F8CFF" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/>
+        <circle cx="32" cy="31" r="4.5" fill="#39D9FF"/>
+        <circle cx="32" cy="31" r="1.5" fill="#FFFFFF"/>
+      </svg>
+    </div>
+    <div class="pre-brand-title">PRAVAHA</div>
+    <div class="pre-subtitle">DISASTER INTELLIGENCE & EMERGENCY RESPONSE</div>
+    <div class="pre-motto">"When seconds matter, intelligence flows."</div>
+    <div class="pre-console mono">
+      <div class="pre-progress-track">
+        <div class="pre-progress-fill" id="preBarFill"></div>
+      </div>
+      <div class="pre-stat-row">
+        <span id="preStep">INITIALIZING DISASTER INTELLIGENCE SYSTEM</span>
+        <span id="prePct">0%</span>
+      </div>
+      <div class="pre-log" id="preLog">> CONNECTING MULTI-SPECTRAL DATA LAYERS</div>
+    </div>
+    <button class="btn btn-ghost sm pre-skip-btn" id="preSkipBtn" data-act="skipPreloader">Skip Intro [ESC]</button>
+  </div>
+</div>
 <div id="app"></div>
 <div id="toasts"></div>
 <script>
 /* =====================================================================
-   SAFELOOP — From SOS to Safe
+   PRAVAHA — Disaster Intelligence & Emergency Response
    Closed-loop disaster response coordination · frontend-only prototype
 ===================================================================== */
 'use strict';
@@ -459,6 +786,25 @@ list:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>'
 send:'<path d="m22 2-11 11"/><path d="M22 2 15 22l-4-9-9-4z"/>',
 swap:'<path d="m17 2 4 4-4 4"/><path d="M21 6H8a5 5 0 0 0-5 5"/><path d="m7 22-4-4 4-4"/><path d="M3 18h13a5 5 0 0 0 5-5"/>',
 pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+};
+
+const praLogo=(size=32,opts={})=>{
+  const cl=opts.class||'';
+  return `<svg class="pra-logo-svg ${cl}" width="${size}" height="${size}" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Pravaha">
+    <defs>
+      <linearGradient id="praG_${size}_${Math.floor(Math.random()*1000)}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#39D9FF"/>
+        <stop offset="50%" stop-color="#4F8CFF"/>
+        <stop offset="100%" stop-color="#36D399"/>
+      </linearGradient>
+    </defs>
+    <path d="M22 3 L38 9 V21 C38 31 30 38 22 41 C14 38 6 31 6 21 V9 Z" fill="rgba(17,26,44,0.75)" stroke="url(#praG1)" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M12 21 C15 16, 19 25, 23 20 C27 15, 30 22, 32 18" stroke="#39D9FF" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M12 25 C16 20, 20 28, 24 23 C28 18, 31 25, 33 22" stroke="#4F8CFF" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 2"/>
+    <circle cx="22" cy="21" r="3.2" fill="#39D9FF"/>
+    <circle cx="22" cy="21" r="6.5" stroke="rgba(57,217,255,0.4)" stroke-width="1" stroke-dasharray="2 2"/>
+    <circle cx="22" cy="21" r="1.2" fill="#FFFFFF"/>
+  </svg>`;
 };
 const ico=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
 
@@ -838,27 +1184,301 @@ function heroHub(){
   </svg>`;
 }
 const viewLanding=()=>`
-<div class="land">
-  <nav class="land-nav">
-    <div class="brand"><span class="brand-mark">${ico('loop',18)}</span>SafeLoop</div>
-    <div class="land-links"><span data-act="scrollTo" data-to="sec-problem">The Problem</span><span data-act="scrollTo" data-to="sec-how">How it works</span><span data-act="scrollTo" data-to="sec-usp">Closed Loop</span><span data-act="go" data-to="/roles">Roles</span></div>
-    <button class="btn btn-primary sm" data-act="go" data-to="/roles">Launch Platform ${ico('arrowR',14)}</button>
-  </nav>
-  <header class="hero">
-    <div class="hero-copy" data-anim>
-      <div class="hero-badge"><i></i>SMART INTEGRATED DISASTER RESPONSE PLATFORM</div>
-      <h1 class="hero-h">From SOS<br>to <em>Safe.</em></h1>
-      <p class="hero-sub">One connected platform for intelligent, coordinated and transparent disaster response.</p>
-      <p class="hero-support">Connecting citizens, emergency authorities, rescue teams, volunteers, shelters and resources through a closed-loop disaster response ecosystem.</p>
-      <div class="hero-cta">
-        <button class="btn btn-primary lg" data-act="go" data-to="/roles">Explore Platform ${ico('arrowR',16)}</button>
-        <button class="btn btn-danger lg" data-act="go" data-to="/sos">${ico('siren',16)} Emergency SOS</button>
+<div class="land" id="praLanding">
+  <!-- Pravaha Floating Glass Nav -->
+  <nav class="land-nav pra-nav">
+    <div class="brand pra-brand" data-act="go" data-to="/" style="cursor:pointer">
+      <span class="brand-mark pra-brand-mark">${praLogo(32)}</span>
+      <div class="pra-brand-titles">
+        <span class="pra-name">PRAVAHA</span>
+        <span class="pra-tag mono">DISASTER INTELLIGENCE</span>
       </div>
-      <div class="hero-meta mono">INTERACTIVE PROTOTYPE · FULLY FUNCTIONAL · NO BACKEND REQUIRED</div>
     </div>
-    <div class="hero-viz" data-anim>${heroHub()}</div>
+    <div class="land-links pra-nav-links">
+      <span data-act="scrollTo" data-to="sec-core">Response Core</span>
+      <span data-act="scrollTo" data-to="stage-awareness">Awareness</span>
+      <span data-act="scrollTo" data-to="stage-risk">Risk Engine</span>
+      <span data-act="scrollTo" data-to="stage-sos">SOS & Routing</span>
+      <span data-act="scrollTo" data-to="sec-how">Closed Loop</span>
+      <span data-act="go" data-to="/roles">Roles</span>
+    </div>
+    <div class="pra-nav-actions">
+      <button class="btn btn-danger sm pra-nav-sos" data-act="go" data-to="/sos">
+        <i class="sos-pulse-dot"></i> Emergency SOS
+      </button>
+      <button class="btn btn-primary sm pra-nav-launch" data-act="go" data-to="/roles">
+        Launch Pravaha ${ico('arrowR',14)}
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Hero Section -->
+  <header class="pra-hero" id="sec-hero">
+    <div class="pra-hero-backdrop"></div>
+    <div class="pra-hero-grid">
+      <div class="pra-hero-content" data-anim>
+        <div class="hero-badge pra-badge">
+          <i class="pra-beacon"></i>
+          <span>PRAVAHA INTELLIGENCE PLATFORM · V3.2 LIVE</span>
+        </div>
+        <h1 class="pra-hero-h">
+          Intelligence<br>
+          <span class="pra-grad-text">Before Disaster.</span>
+        </h1>
+        <p class="pra-hero-sub">
+          Pravaha transforms fragmented disaster information into real-time awareness, preparedness guidance, emergency response, and coordinated action.
+        </p>
+        <div class="pra-hero-quote mono">
+          <span class="pra-quote-bar"></span>
+          <span>"When seconds matter, intelligence flows."</span>
+        </div>
+        <div class="hero-cta pra-hero-cta">
+          <button class="btn btn-primary lg pra-btn-glow" data-act="scrollTo" data-to="sec-core">
+            Explore the System ${ico('arrowR',16)}
+          </button>
+          <button class="btn btn-danger lg" data-act="demoRun">
+            ${ico('siren',16)} Emergency Demo
+          </button>
+          <button class="btn btn-ghost lg" data-act="go" data-to="/roles">
+            Launch Pravaha →
+          </button>
+        </div>
+        <div class="pra-hero-pills mono">
+          <span class="pra-pill"><i class="dot ok"></i> 4-TIER MULTI-SPECTRAL STREAM</span>
+          <span class="pra-pill"><i class="dot ok"></i> &lt;1.2s PROPAGATION</span>
+          <span class="pra-pill"><i class="dot ok"></i> ZERO BACKEND DEPENDENCY</span>
+        </div>
+      </div>
+    </div>
   </header>
 
+  <!-- CENTRAL 3D INTERACTIVE SHOWCASE & SCROLL STORYTELLING -->
+  <section class="pra-story-section" id="sec-core">
+    <!-- Sticky Horizon Timeline -->
+    <div class="pra-sticky-timeline">
+      <div class="pra-tl-container">
+        <div class="pra-tl-line">
+          <div class="pra-tl-progress" id="praTlBar"></div>
+        </div>
+        <div class="pra-tl-nodes">
+          <button class="pra-tl-node active" data-stage="0" data-act="jumpStage" title="Awareness">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">AWARENESS</span>
+          </button>
+          <button class="pra-tl-node" data-stage="1" data-act="jumpStage" title="Risk Detection">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">RISK ENGINE</span>
+          </button>
+          <button class="pra-tl-node" data-stage="2" data-act="jumpStage" title="Early Alerts">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">EARLY ALERTS</span>
+          </button>
+          <button class="pra-tl-node" data-stage="3" data-act="jumpStage" title="SOS Response">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">SOS RESPONSE</span>
+          </button>
+          <button class="pra-tl-node" data-stage="4" data-act="jumpStage" title="Safe Navigation">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">SAFE ROUTING</span>
+          </button>
+          <button class="pra-tl-node" data-stage="5" data-act="jumpStage" title="Coordinated Ecosystem">
+            <span class="pra-tl-dot"></span>
+            <span class="pra-tl-txt mono">COORDINATION</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky 3D Showcase Viewport -->
+    <div class="pra-showcase-sticky">
+      <div class="pra-canvas-box" id="praCanvasWrap">
+        <canvas id="coreCanvas3D"></canvas>
+
+        <!-- Technical Blueprint SVG HUD Overlay -->
+        <svg id="praHudSvg" class="pra-hud-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet">
+          <g class="hud-crosshairs faint">
+            <path d="M50 40 L70 40 M50 40 L50 60" stroke="rgba(57,217,255,0.4)" stroke-width="1.2" fill="none"/>
+            <path d="M950 40 L930 40 M950 40 L950 60" stroke="rgba(57,217,255,0.4)" stroke-width="1.2" fill="none"/>
+            <path d="M50 660 L70 660 M50 660 L50 640" stroke="rgba(57,217,255,0.4)" stroke-width="1.2" fill="none"/>
+            <path d="M950 660 L930 660 M950 660 L950 640" stroke="rgba(57,217,255,0.4)" stroke-width="1.2" fill="none"/>
+            <circle cx="500" cy="350" r="210" stroke="rgba(57,217,255,0.12)" stroke-width="1" stroke-dasharray="3 4" fill="none"/>
+            <circle cx="500" cy="350" r="290" stroke="rgba(79,140,255,0.08)" stroke-width="1" stroke-dasharray="6 8" fill="none"/>
+          </g>
+          <g id="hudLines" class="hud-lines">
+            <path id="lineData" d="M 280 200 L 420 280" stroke="rgba(57,217,255,0.5)" stroke-width="1.4" stroke-dasharray="4 2" fill="none"/>
+            <path id="lineRisk" d="M 720 210 L 570 290" stroke="rgba(245,185,66,0.5)" stroke-width="1.4" stroke-dasharray="4 2" fill="none"/>
+            <path id="lineAlert" d="M 300 480 L 440 400" stroke="rgba(255,77,94,0.5)" stroke-width="1.4" stroke-dasharray="4 2" fill="none"/>
+            <path id="lineRoute" d="M 700 490 L 560 410" stroke="rgba(54,211,153,0.5)" stroke-width="1.4" stroke-dasharray="4 2" fill="none"/>
+          </g>
+          <g class="hud-tags mono">
+            <text x="70" y="70" fill="#39D9FF" font-size="11" letter-spacing="1.5">SYS_CORE: PRAVAHA-RESPONSE-CORE</text>
+            <text x="70" y="88" fill="#5C6D8E" font-size="9.5">GEO_LAT: 19.0760° N · LON: 72.8777° E</text>
+            <text x="930" y="70" text-anchor="end" fill="#36D399" font-size="11" letter-spacing="1.5">INTEGRITY: NOMINAL 99.8%</text>
+            <text x="930" y="88" text-anchor="end" fill="#5C6D8E" font-size="9.5">TELEMETRY FREQ: 142.85 MHz</text>
+          </g>
+        </svg>
+
+        <!-- Exploded Layer HUD Labels -->
+        <div class="pra-hud-layer-tags" id="hudLayerTags">
+          <div class="pra-layer-tag tag-data visible" id="tagData">
+            <span class="tag-title mono">DATA SOURCES</span>
+            <span class="tag-sub">Weather · Radar · Stream Gauges</span>
+          </div>
+          <div class="pra-layer-tag tag-risk" id="tagRisk">
+            <span class="tag-title mono">RISK HEURISTICS</span>
+            <span class="tag-sub">Detection + Multi-Hazard Modeling</span>
+          </div>
+          <div class="pra-layer-tag tag-alert" id="tagAlert">
+            <span class="tag-title mono">EARLY WARNING</span>
+            <span class="tag-sub">Dynamic Radial Severity Pulse</span>
+          </div>
+          <div class="pra-layer-tag tag-sos" id="tagSOS">
+            <span class="tag-title mono">SOS DISPATCH</span>
+            <span class="tag-sub">One-Tap Geoverified Beacon</span>
+          </div>
+          <div class="pra-layer-tag tag-route" id="tagRoute">
+            <span class="tag-title mono">SAFE ROUTING</span>
+            <span class="tag-sub">Zero-Hazard Evacuation Vector</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll Story Chapters -->
+    <div class="pra-story-scroll">
+      <!-- Chapter 1 -->
+      <div class="pra-chapter" id="stage-awareness" data-stage="0">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker ok">STAGE 01 · AWARENESS</div>
+          <h2 class="chap-h">Know What Is Happening.</h2>
+          <p class="chap-p">
+            Pravaha continuously ingests multi-spectral environmental data streams before human reports surface. Satellite radar, automated river sensors, precipitation metrics, and terrain telemetry converge into a unified computational model.
+          </p>
+          <div class="pra-chip-group mono">
+            <span class="chip"><i class="dot ok"></i> DOPPLER RADAR: ACTIVE</span>
+            <span class="chip"><i class="dot ok"></i> SATELLITE TELEMETRY: SYNCED</span>
+            <span class="chip"><i class="dot ok"></i> HYDROLOGICAL GAUGES: 48</span>
+          </div>
+          <div class="pra-micro-flow">
+            <div class="mf-step"><span>Sensors</span><i>→</i></div>
+            <div class="mf-step"><span>Satellites</span><i>→</i></div>
+            <div class="mf-step"><span>Stream Gauges</span><i>→</i></div>
+            <div class="mf-step highlighted"><span>Pravaha Core</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 2 -->
+      <div class="pra-chapter" id="stage-risk" data-stage="1">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker" style="color:var(--pra-amber)">STAGE 02 · RISK DETECTION</div>
+          <h2 class="chap-h">Understand What Could Happen.</h2>
+          <p class="chap-p">
+            As conditions shift, the Pravaha Response Core separates into distinct analytical layers. Topographic contours and rainfall forecasts are cross-referenced with population density and structural vulnerabilities.
+          </p>
+          <div class="pra-risk-tiers">
+            <div class="risk-bar low"><span>LOW</span><b>Normal Flow</b></div>
+            <div class="risk-bar mod"><span>MODERATE</span><b>Water Level +1.2m</b></div>
+            <div class="risk-bar high"><span>HIGH</span><b>Flash Flood Alert</b></div>
+            <div class="risk-bar crit"><span>CRITICAL</span><b>Breach Imminent</b></div>
+          </div>
+          <p class="mono faint" style="font-size:11.5px;margin-top:12px">
+            HEURISTIC MODELING ACCURACY: 94.6% · 3.2GHz RADAR SCAN
+          </p>
+        </div>
+      </div>
+
+      <!-- Chapter 3 -->
+      <div class="pra-chapter" id="stage-alerts" data-stage="2">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker" style="color:var(--pra-amber)">STAGE 03 · EARLY ALERTS</div>
+          <h2 class="chap-h">Act Before It Escalates.</h2>
+          <p class="chap-p">
+            When probability thresholds cross critical levels, the intelligence core generates radial alert pulses. Regional authorities, frontline rescue units, and registered citizens receive actionable warnings with clear mitigation instructions.
+          </p>
+          <div class="pra-alert-cascade">
+            <div class="cas-step"><span class="cas-num">01</span><div class="cas-info"><b>Threat Detected</b><span>Hydrological threshold breached</span></div></div>
+            <div class="cas-step"><span class="cas-num">02</span><div class="cas-info"><b>Risk Evaluated</b><span>Heuristic score computed (88/100)</span></div></div>
+            <div class="cas-step"><span class="cas-num">03</span><div class="cas-info"><b>Alert Generated</b><span>Automated geo-fenced priority notice</span></div></div>
+            <div class="cas-step active"><span class="cas-num">04</span><div class="cas-info"><b>Citizens & Units Notified</b><span>SMS, App push, Siren relay (&lt;1.2s)</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 4 -->
+      <div class="pra-chapter" id="stage-sos" data-stage="3">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker" style="color:var(--pra-red)">STAGE 04 · SOS RESPONSE</div>
+          <h2 class="chap-h">One Signal. Immediate Action.</h2>
+          <p class="chap-p">
+            When crisis strikes, citizens activate the emergency SOS beacon. Pravaha instantly captures exact coordinates, assesses entrapment and medical severity, and broadcasts directly to the closest available rescue unit.
+          </p>
+          <div class="pra-sos-flow-box">
+            <div class="sos-head">
+              <span class="sos-badge"><i class="sos-blink"></i> LIVE SOS BEACON</span>
+              <span class="mono" style="font-size:12px;color:var(--pra-red)">LAT: 19.0760° N</span>
+            </div>
+            <div class="sos-timeline">
+              <div class="st-item"><i class="st-ic">${ico('phone',14)}</i><span>User Activates SOS</span><span class="mono faint">T+0.0s</span></div>
+              <div class="st-item"><i class="st-ic">${ico('eye',14)}</i><span>Location & Needs Captured</span><span class="mono faint">T+0.4s</span></div>
+              <div class="st-item"><i class="st-ic">${ico('zap',14)}</i><span>Emergency Contacts Alerted</span><span class="mono faint">T+0.8s</span></div>
+              <div class="st-item"><i class="st-ic">${ico('helmet',14)}</i><span>Nearest Team (Alpha-1) Dispatched</span><span class="mono faint">T+1.4s</span></div>
+              <div class="st-item active"><i class="st-ic">${ico('radio',14)}</i><span>Response Loop Active</span><span class="mono faint">SYNCED</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 5 -->
+      <div class="pra-chapter" id="stage-routing" data-stage="4">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker ok">STAGE 05 · SAFE NAVIGATION</div>
+          <h2 class="chap-h">Find The Safest Way Forward.</h2>
+          <p class="chap-p">
+            Escape routes in disasters change by the minute. Pravaha computes real-time dynamic routing that routes around flooded roadways, collapsed infrastructure, and hazardous zones, directing evacuees straight to verified shelters.
+          </p>
+          <div class="pra-route-diag">
+            <div class="rd-node origin"><i class="dot red"></i><span>Current Hazard Location</span></div>
+            <div class="rd-path">
+              <div class="rd-hazard"><i class="hazard-x">${ico('x',12)}</i> Flood Surge Zone (Blocked)</div>
+              <div class="rd-safe"><i class="safe-chk">${ico('check',12)}</i> Dynamic Safe Vector (Cleared)</div>
+            </div>
+            <div class="rd-node dest"><i class="dot ok"></i><span>Central Shelter Hub (84 Free Beds)</span></div>
+          </div>
+          <div class="pra-route-stats mono">
+            <span>0 HAZARD INTERSECTIONS</span>
+            <span>ESTIMATED TIME: 8 MIN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 6 -->
+      <div class="pra-chapter" id="stage-coordination" data-stage="5">
+        <div class="pra-chap-card card" data-anim>
+          <div class="sec-kicker ok">STAGE 06 · REASSEMBLY</div>
+          <h2 class="chap-h">Prepared Communities. Faster Response. Safer Lives.</h2>
+          <p class="chap-p">
+            All intelligence streams, citizen SOS requests, rescue units, resource stockpiles, and shelters operate on one cohesive, unified system. No request is ever forgotten until the person is confirmed safe.
+          </p>
+          <div class="pra-cohesion-stats">
+            <div class="cs-box"><span class="cs-num">100%</span><span class="cs-lbl">Closed-Loop Tracking</span></div>
+            <div class="cs-box"><span class="cs-num">&lt;2min</span><span class="cs-lbl">Average Dispatch Speed</span></div>
+            <div class="cs-box"><span class="cs-num">5 Roles</span><span class="cs-lbl">Unified Ecosystem Sync</span></div>
+          </div>
+          <div class="pra-chap-cta" style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-primary lg" data-act="go" data-to="/roles">
+              Launch Pravaha Platform ${ico('arrowR',16)}
+            </button>
+            <button class="btn btn-ghost lg" data-act="go" data-to="/command">
+              Command Center
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
   <section class="land-sec" id="sec-problem">
     <div class="sec-kicker">THE PROBLEM</div>
     <h2 class="sec-title" data-anim>Reporting is easy. <span style="color:var(--red)">Everything after that breaks down.</span></h2>
@@ -869,8 +1489,9 @@ const viewLanding=()=>`
     </div>
   </section>
 
+  <!-- Closed Loop Ecosystem Section -->
   <section class="land-sec" id="sec-how">
-    <div class="sec-kicker ok">OUR PLATFORM</div>
+    <div class="sec-kicker ok">THE PRAVAHA ADVANTAGE</div>
     <h2 class="sec-title" data-anim>One connected chain, from the first report to final resolution.</h2>
     <p class="sec-sub" data-anim>Every request flows through a single coordinated pipeline — visible to every stakeholder at every step.</p>
     <div class="chain okc" data-anim>
@@ -879,14 +1500,14 @@ const viewLanding=()=>`
     </div>
     <div class="usp-band" id="sec-usp" data-anim>
       <div class="loop-visual">
-        <svg viewBox="0 0 180 180"><circle cx="90" cy="90" r="80" fill="none" stroke="rgba(47,214,163,.25)" stroke-width="2"/>
-        <circle class="loopRing" cx="90" cy="90" r="80" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="120 380"/></svg>
-        <div style="text-align:center">${ico('loop',30)}<div class="loop-word">CLOSED</div><div class="loop-word">LOOP</div></div>
+        <svg viewBox="0 0 180 180"><circle cx="90" cy="90" r="80" fill="none" stroke="rgba(57,217,255,.25)" stroke-width="2"/>
+        <circle class="loopRing" cx="90" cy="90" r="80" fill="none" stroke="var(--pra-cyan)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="120 380"/></svg>
+        <div style="text-align:center">${praLogo(44)}<div class="loop-word" style="color:var(--pra-cyan);margin-top:6px">CLOSED</div><div class="loop-word" style="color:var(--pra-cyan)">LOOP</div></div>
       </div>
       <div>
-        <div class="sec-kicker ok" style="margin-bottom:8px">CORE USP</div>
-        <h2 class="sec-title" style="margin-bottom:10px">CLOSED-LOOP RESPONSE</h2>
-        <p class="sec-sub" style="margin-bottom:0">A request is not simply received. It stays visible — prioritized, assigned, tracked and supported — until the person behind it is <b style="color:var(--green)">safe</b>. No case closes before resolution.</p>
+        <div class="sec-kicker ok" style="margin-bottom:8px">PRAVAHA CORE USP</div>
+        <h2 class="sec-title" style="margin-bottom:10px">CLOSED-LOOP DISASTER RESPONSE</h2>
+        <p class="sec-sub" style="margin-bottom:0">A request is not simply received. It stays visible — prioritized, assigned, tracked and supported — until the person behind it is <b style="color:var(--pra-green)">safe</b>. No case closes before verified resolution.</p>
       </div>
     </div>
     <div class="usp-grid" data-anim>
@@ -900,6 +1521,7 @@ const viewLanding=()=>`
     </div>
   </section>
 
+  <!-- Response Lifecycle & Stakeholders -->
   <section class="land-sec">
     <div class="sec-kicker">RESPONSE LIFECYCLE</div>
     <h2 class="sec-title" data-anim>The complete loop, end to end.</h2>
@@ -913,16 +1535,17 @@ const viewLanding=()=>`
     </div>
   </section>
 
+  <!-- Pravaha Brand Footer -->
   <footer class="footer-land">
-    <div class="brand" style="font-size:16px"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
-    <div class="muted" style="font-size:13.5px">"Disaster response should not end when an emergency is reported."</div>
-    <div class="mono faint" style="font-size:11px">PROTOTYPE V1.0 · FRONTEND-ONLY SIMULATION</div>
+    <div class="brand pra-brand" style="font-size:16px"><span class="brand-mark pra-brand-mark">${praLogo(28)}</span><div class="pra-brand-titles"><span class="pra-name" style="font-size:16px">PRAVAHA</span><span class="pra-tag mono">DISASTER INTELLIGENCE</span></div></div>
+    <div class="muted" style="font-size:13.5px">"When seconds matter, intelligence flows."</div>
+    <div class="mono faint" style="font-size:11px">PRAVAHA V3.2 · ADVANCED INTERACTIVE DISASTER RESPONSE ECOSYSTEM</div>
   </footer>
 </div>`;
 
 const viewRoles=()=>`
 <div style="min-height:100vh;display:flex;flex-direction:column">
-  <nav class="land-nav"><div class="brand"><span class="brand-mark">${ico('loop',18)}</span>SafeLoop</div>
+  <nav class="land-nav"><div class="brand pra-brand" data-act="go" data-to="/"><span class="brand-mark pra-brand-mark">${praLogo(32)}</span><div class="pra-brand-titles"><span class="pra-name">PRAVAHA</span><span class="pra-tag mono">DISASTER INTELLIGENCE</span></div></div>
   <span class="muted" style="font-size:13.5px">Select your role to enter the ecosystem</span>
   <button class="btn btn-ghost sm" data-act="go" data-to="/">Back</button></nav>
   <div style="max-width:1100px;margin:0 auto;padding:56px 5vw 80px;width:100%">
@@ -959,7 +1582,7 @@ function miniStages(inc){
 }
 function citizenNav(active){
   return `<div class="cit-top">
-  <div class="brand" style="font-size:16px;cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+  <div class="brand pra-brand" style="cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark pra-brand-mark">${praLogo(26)}</span><div class="pra-brand-titles"><span class="pra-name" style="font-size:16px">PRAVAHA</span><span class="pra-tag mono">CITIZEN PORTAL</span></div></div>
   <div class="cit-links">
     <span class="cit-link ${active==='home'?'active':''}" data-act="go" data-to="/citizen">Home</span>
     <span class="cit-link ${active==='track'?'active':''}" data-act="go" data-to="/track">Track Request</span>
@@ -1117,7 +1740,7 @@ const viewSOS=()=>{
       </div></div>`;
   }
   return `
-<div class="cit-top"><div class="brand" style="font-size:16px"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+<div class="cit-top"><div class="brand pra-brand" data-act="go" data-to="/"><span class="brand-mark pra-brand-mark">${praLogo(28)}</span><div class="pra-brand-titles"><span class="pra-name" style="font-size:16px">PRAVAHA</span><span class="pra-tag mono">DISASTER INTELLIGENCE</span></div></div>
   <span class="badge b-red" style="margin-left:8px"><i></i>${st.done?'REQUEST ACTIVE':'EMERGENCY MODE'}</span>
   <div style="margin-left:auto"><button class="btn sm btn-ghost" data-act="go" data-to="/citizen">${ico('x',14)} Exit</button></div></div>
 <div class="cit-main sos-page">
@@ -1186,7 +1809,7 @@ const viewTrack=()=>{
 <style>@media(max-width:920px){.track-grid{grid-template-columns:1fr!important}}</style>`;
 };
 function citizenNavInner(active){
-  return `<div class="brand" style="font-size:16px;cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark">${ico('loop',16)}</span>SafeLoop</div>
+  return `<div class="brand pra-brand" style="cursor:pointer" data-act="go" data-to="/citizen"><span class="brand-mark pra-brand-mark">${praLogo(26)}</span><div class="pra-brand-titles"><span class="pra-name" style="font-size:16px">PRAVAHA</span><span class="pra-tag mono">CITIZEN PORTAL</span></div></div>
   <div class="cit-links"><span class="cit-link ${active==='home'?'active':''}" data-act="go" data-to="/citizen">Home</span><span class="cit-link ${active==='track'?'active':''}">Track</span><span class="cit-link" data-act="go" data-to="/shelters">Shelters</span><span class="cit-link ${active==='alerts'?'active':''}" data-act="go" data-to="/alerts">Alerts</span></div>
   <div style="margin-left:auto"><button class="btn sm btn-ghost" data-act="go" data-to="/roles">${ico('swap',14)} Switch Role</button></div>`;
 }
@@ -1212,7 +1835,7 @@ function shellHTML(title,inner,active){
   const nav=navFor(S.role);
   return `<div class="shell">
   <aside class="sidebar">
-    <div class="brand" style="cursor:pointer" data-act="go" data-to="${roleHome(S.role)}"><span class="brand-mark">${ico('loop',17)}</span>SafeLoop</div>
+    <div class="brand pra-brand" style="cursor:pointer" data-act="go" data-to="${roleHome(S.role)}"><span class="brand-mark pra-brand-mark">${praLogo(26)}</span><div class="pra-brand-titles"><span class="pra-name" style="font-size:16px">PRAVAHA</span><span class="pra-tag mono">COMMAND ECOSYSTEM</span></div></div>
     <div class="nav-sec">OPERATIONS</div>
     ${nav.map(n=>`<div class="nav-item ${active===n[0]?'active':''}" data-act="go" data-to="${n[0]}">${ico(n[2],17)} ${n[1]} ${n[3]?`<span class="nv">${n[3]}</span>`:''}</div>`).join('')}
     <div class="nav-bottom">
@@ -1561,7 +2184,7 @@ const viewSettings=()=>`
       </div>
     </div>
     <div class="col-stack">
-      <div class="card" data-anim><div class="mini-h">ABOUT SAFELOOP</div>
+      <div class="card" data-anim><div class="mini-h">ABOUT PRAVAHA</div>
         <p style="font-size:14px;margin-bottom:10px">"From SOS to Safe — a closed-loop system for coordinated disaster response."</p>
         <p class="muted" style="font-size:13px">A closed-loop disaster response ecosystem that connects reporting, prioritization, coordination, deployment and resolution in one intelligent platform.</p>
         <div style="margin-top:14px"><span class="fac">Frontend-only prototype</span><span class="fac">Simulated live data</span><span class="fac">localStorage persistence</span><span class="fac">anime.js motion</span></div>
@@ -1710,15 +2333,596 @@ function render(){
   document.body.classList.remove('nav-open');
   UI.lastRoute=base||'landing';
 }
-function mountLanding(){
-  pageIn();
-  ani({targets:'#hubSvg line',strokeDashoffset:[anime.setDashoffset,0],duration:1400,delay:anime.stagger(130),easing:'easeInOutSine'});
-  ani({targets:'#hubSvg .hn',scale:[0,1],opacity:[0,1],duration:650,delay:anime.stagger(110,{start:450}),easing:'easeOutBack'});
-  if(!RM){
-    ani({targets:'#hubSvg .hn-f',translateY:[-4,4],duration:2600,direction:'alternate',loop:true,easing:'easeInOutSine',delay:anime.stagger(220)});
-    ani({targets:'.loopRing',strokeDashoffset:[anime.setDashoffset,0],rotate:[0,360],duration:6400,loop:true,easing:'linear'});
+
+/* ---------------- PRAVAHA 3D RESPONSE CORE & ANIMATIONS ---------------- */
+let praThree = null;
+
+function initPravahaResponseCore(){
+  const canvas = document.getElementById('coreCanvas3D');
+  if(!canvas) return;
+  const wrap = document.getElementById('praCanvasWrap');
+  if(!wrap) return;
+
+  // If Three.js is not loaded, gracefully fallback to canvas 2D
+  if(typeof THREE === 'undefined'){
+    initCanvasFallback(canvas);
+    return;
+  }
+
+  // Cleanup existing instance if any
+  if(praThree && praThree.renderer){
+    try{
+      praThree.running = false;
+      cancelAnimationFrame(praThree.animId);
+      praThree.renderer.dispose();
+    }catch(e){}
+  }
+
+  const width = wrap.clientWidth || window.innerWidth;
+  const height = wrap.clientHeight || window.innerHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, width / height, 1, 3000);
+  camera.position.set(0, 40, 480);
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    alpha: true,
+    antialias: true,
+    powerPreference: 'high-performance'
+  });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0x16233b, 2.2);
+  scene.add(ambientLight);
+
+  const dirLight1 = new THREE.DirectionalLight(0x4f8cff, 2.8);
+  dirLight1.position.set(150, 200, 200);
+  scene.add(dirLight1);
+
+  const dirLight2 = new THREE.DirectionalLight(0x39d9ff, 1.4);
+  dirLight2.position.set(-150, -100, 100);
+  scene.add(dirLight2);
+
+  const coreLight = new THREE.PointLight(0x39d9ff, 4.0, 400);
+  coreLight.position.set(0, 0, 0);
+  scene.add(coreLight);
+
+  // Group containing all response core components
+  const coreGroup = new THREE.Group();
+  scene.add(coreGroup);
+
+  // --- LAYER 1: Central Intelligence Crystal ---
+  const crystalGeo = new THREE.IcosahedronGeometry(36, 0);
+  const crystalMat = new THREE.MeshPhongMaterial({
+    color: 0x14284d,
+    emissive: 0x0c1e3d,
+    shininess: 90,
+    flatShading: true,
+    transparent: true,
+    opacity: 0.92
+  });
+  const crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
+  coreGroup.add(crystalMesh);
+
+  // Wireframe outer shell
+  const wireGeo = new THREE.IcosahedronGeometry(42, 1);
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0x39d9ff,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.55
+  });
+  const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+  coreGroup.add(wireMesh);
+
+  // Pulsing central energy sphere
+  const orbGeo = new THREE.SphereGeometry(16, 24, 24);
+  const orbMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.95
+  });
+  const orbMesh = new THREE.Mesh(orbGeo, orbMat);
+  coreGroup.add(orbMesh);
+
+  // --- LAYER 2: Topographic Contour Rings & Elevation Base ---
+  const terrainGroup = new THREE.Group();
+  coreGroup.add(terrainGroup);
+  terrainGroup.position.y = -60;
+
+  const contourColors = [0x39d9ff, 0x4f8cff, 0x2fd6a3, 0x39d9ff];
+  const contourRadii = [60, 88, 120, 155];
+  const contourMeshes = [];
+  for(let i=0; i<4; i++){
+    const ringGeo = new THREE.RingGeometry(contourRadii[i]-1.5, contourRadii[i], 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: contourColors[i],
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.45 - i*0.08
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.rotation.x = Math.PI / 2;
+    ringMesh.position.y = -i * 8;
+    terrainGroup.add(ringMesh);
+    contourMeshes.push(ringMesh);
+  }
+
+  // Terrain Elevation Wireframe Grid
+  const gridGeo = new THREE.PlaneGeometry(240, 240, 16, 16);
+  const posAttr = gridGeo.attributes.position;
+  for(let i=0; i<posAttr.count; i++){
+    const x = posAttr.getX(i);
+    const y = posAttr.getY(i);
+    const z = Math.sin(x*0.04)*Math.cos(y*0.04)*16 + Math.sin(x*0.08)*6;
+    posAttr.setZ(i, z);
+  }
+  gridGeo.computeVertexNormals();
+  const gridMat = new THREE.MeshBasicMaterial({
+    color: 0x223558,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.35
+  });
+  const terrainPlane = new THREE.Mesh(gridGeo, gridMat);
+  terrainPlane.rotation.x = -Math.PI / 2;
+  terrainPlane.position.y = -40;
+  terrainGroup.add(terrainPlane);
+
+  // --- LAYER 3: Orbital Radar & Sensor Rings ---
+  const radarGroup = new THREE.Group();
+  coreGroup.add(radarGroup);
+
+  const rRings = [];
+  const r1Geo = new THREE.TorusGeometry(95, 0.8, 8, 80);
+  const r1Mat = new THREE.MeshBasicMaterial({ color: 0x39d9ff, transparent: true, opacity: 0.55 });
+  const r1 = new THREE.Mesh(r1Geo, r1Mat);
+  r1.rotation.x = 0.4;
+  radarGroup.add(r1);
+  rRings.push(r1);
+
+  const r2Geo = new THREE.TorusGeometry(125, 0.9, 8, 80);
+  const r2Mat = new THREE.MeshBasicMaterial({ color: 0x4f8cff, transparent: true, opacity: 0.45 });
+  const r2 = new THREE.Mesh(r2Geo, r2Mat);
+  r2.rotation.y = 0.6;
+  radarGroup.add(r2);
+  rRings.push(r2);
+
+  // Orbital sensor nodes on the rings
+  const sensorGeo = new THREE.SphereGeometry(3.5, 12, 12);
+  const sensorMat = new THREE.MeshBasicMaterial({ color: 0x39d9ff });
+  const sensorNodes = [];
+  for(let i=0; i<6; i++){
+    const sm = new THREE.Mesh(sensorGeo, sensorMat);
+    radarGroup.add(sm);
+    sensorNodes.push(sm);
+  }
+
+  // --- LAYER 4: Shockwave Alert Emitters ---
+  const shockGroup = new THREE.Group();
+  coreGroup.add(shockGroup);
+  const shockRings = [];
+  for(let i=0; i<3; i++){
+    const sGeo = new THREE.RingGeometry(20, 23, 48);
+    const sMat = new THREE.MeshBasicMaterial({
+      color: 0xf5b942,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.0
+    });
+    const sm = new THREE.Mesh(sGeo, sMat);
+    sm.rotation.x = Math.PI/2;
+    shockGroup.add(sm);
+    shockRings.push({ mesh: sm, scale: 1.0 + i*0.8, opacity: 0.0 });
+  }
+
+  // --- LAYER 5: Emergency SOS Beacon ---
+  const sosGroup = new THREE.Group();
+  coreGroup.add(sosGroup);
+  sosGroup.position.set(0, 50, 0);
+
+  const sosBeaconGeo = new THREE.SphereGeometry(7, 16, 16);
+  const sosBeaconMat = new THREE.MeshBasicMaterial({ color: 0xff4d5e });
+  const sosBeacon = new THREE.Mesh(sosBeaconGeo, sosBeaconMat);
+  sosGroup.add(sosBeacon);
+
+  const sosRingGeo = new THREE.RingGeometry(10, 13, 36);
+  const sosRingMat = new THREE.MeshBasicMaterial({
+    color: 0xff4d5e,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.7
+  });
+  const sosRing = new THREE.Mesh(sosRingGeo, sosRingMat);
+  sosRing.rotation.x = Math.PI / 2;
+  sosGroup.add(sosRing);
+
+  // --- LAYER 6: Dynamic Safe Evacuation Path ---
+  const routeGroup = new THREE.Group();
+  coreGroup.add(routeGroup);
+
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-90, -30, 40),
+    new THREE.Vector3(-50, 0, 80),
+    new THREE.Vector3(20, 30, 70),
+    new THREE.Vector3(80, 10, 30),
+    new THREE.Vector3(110, -20, -20)
+  ]);
+  const tubeGeo = new THREE.TubeGeometry(curve, 64, 1.8, 8, false);
+  const tubeMat = new THREE.MeshBasicMaterial({
+    color: 0x36d399,
+    transparent: true,
+    opacity: 0.75
+  });
+  const routeTube = new THREE.Mesh(tubeGeo, tubeMat);
+  routeGroup.add(routeTube);
+
+  // Traveling photon packets on the safe route
+  const photonGeo = new THREE.SphereGeometry(3.5, 12, 12);
+  const photonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const photon = new THREE.Mesh(photonGeo, photonMat);
+  routeGroup.add(photon);
+
+  // Hazard block volume
+  const hazardGeo = new THREE.BoxGeometry(34, 34, 34);
+  const hazardMat = new THREE.MeshBasicMaterial({
+    color: 0xff4d5e,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.4
+  });
+  const hazardBlock = new THREE.Mesh(hazardGeo, hazardMat);
+  hazardBlock.position.set(-20, 10, 30);
+  routeGroup.add(hazardBlock);
+
+  // --- LAYER 7: Protective Shield Plates (4 Facets) ---
+  const shieldGroup = new THREE.Group();
+  coreGroup.add(shieldGroup);
+  const shieldPlates = [];
+
+  const plateGeo = new THREE.CylinderGeometry(56, 56, 18, 6, 1, true, 0, Math.PI / 3);
+  const plateMat = new THREE.MeshPhongMaterial({
+    color: 0x182a4d,
+    emissive: 0x0e1b33,
+    shininess: 80,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.85
+  });
+
+  for(let i=0; i<4; i++){
+    const plate = new THREE.Mesh(plateGeo, plateMat);
+    const angle = (i * Math.PI) / 2;
+    plate.rotation.y = angle;
+    shieldGroup.add(plate);
+    shieldPlates.push({ mesh: plate, baseAngle: angle });
+  }
+
+  // --- LAYER 8: Inflow Multi-Spectral Data Particles ---
+  const particleCount = 350;
+  const pGeo = new THREE.BufferGeometry();
+  const pPositions = new Float32Array(particleCount * 3);
+  const pVelocities = [];
+
+  for(let i=0; i<particleCount; i++){
+    const rad = 140 + Math.random() * 220;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = (Math.random() - 0.5) * Math.PI;
+
+    pPositions[i*3] = rad * Math.cos(theta) * Math.cos(phi);
+    pPositions[i*3+1] = rad * Math.sin(phi);
+    pPositions[i*3+2] = rad * Math.sin(theta) * Math.cos(phi);
+
+    pVelocities.push({
+      speed: 0.4 + Math.random() * 0.8,
+      rad: rad,
+      theta: theta,
+      phi: phi
+    });
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+  const pMat = new THREE.PointsMaterial({
+    color: 0x39d9ff,
+    size: 2.5,
+    transparent: true,
+    opacity: 0.75
+  });
+  const particleSystem = new THREE.Points(pGeo, pMat);
+  coreGroup.add(particleSystem);
+
+  // Mouse Parallax
+  let mouseX = 0, mouseY = 0;
+  let targetRotX = 0, targetRotY = 0;
+
+  function onMouseMove(e){
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 0.8;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 0.6;
+  }
+  window.addEventListener('mousemove', onMouseMove, { passive: true });
+
+  // Scroll Sync & Storytelling Handler
+  let scrollProgress = 0;
+  let activeStage = 0;
+
+  function onScroll(){
+    const sec = document.getElementById('sec-core');
+    if(!sec) return;
+    const rect = sec.getBoundingClientRect();
+    const totalDist = sec.offsetHeight - window.innerHeight;
+    if(totalDist <= 0) return;
+
+    const current = Math.min(Math.max(-rect.top, 0), totalDist);
+    scrollProgress = current / totalDist;
+
+    // Stage calculation (0 to 5)
+    activeStage = Math.min(Math.floor(scrollProgress * 6), 5);
+
+    // Update sticky progress bar
+    const bar = document.getElementById('praTlBar');
+    if(bar) bar.style.width = (scrollProgress * 100) + '%';
+
+    // Update active node in timeline
+    const nodes = document.querySelectorAll('.pra-tl-node');
+    nodes.forEach((n, idx) => {
+      n.classList.toggle('active', idx === activeStage);
+    });
+
+    // Update HUD Layer callout tags
+    const tags = {
+      tagData: activeStage >= 0,
+      tagRisk: activeStage >= 1,
+      tagAlert: activeStage >= 2,
+      tagSOS: activeStage >= 3,
+      tagRoute: activeStage >= 4
+    };
+    for(const id in tags){
+      const el = document.getElementById(id);
+      if(el) el.classList.toggle('visible', tags[id]);
+    }
+
+    // Environmental color shift
+    const colors = [
+      'rgba(79,140,255,0.14)',   // 0: Awareness Blue
+      'rgba(245,185,66,0.14)',   // 1: Risk Amber
+      'rgba(255,77,94,0.16)',    // 2: Alert Crimson
+      'rgba(255,77,94,0.22)',    // 3: SOS Emergency Red
+      'rgba(54,211,153,0.18)',   // 4: Safe Routing Emerald
+      'rgba(57,217,255,0.16)'    // 5: Cohesive Resilient Cyan
+    ];
+    document.documentElement.style.setProperty('--env-glow', colors[activeStage]);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Resize Handler
+  function onResize(){
+    if(!wrap || !canvas) return;
+    const nw = wrap.clientWidth;
+    const nh = wrap.clientHeight;
+    camera.aspect = nw / nh;
+    camera.updateProjectionMatrix();
+    renderer.setSize(nw, nh);
+  }
+  window.addEventListener('resize', onResize);
+
+  // Store instance for animation & disposal
+  praThree = {
+    renderer, scene, camera, coreGroup,
+    running: true, animId: null,
+    onResize, onScroll
+  };
+
+  // Main Render Animation Loop
+  let clock = 0;
+  function animate(){
+    if(!praThree.running) return;
+    praThree.animId = requestAnimationFrame(animate);
+    clock += 0.016;
+
+    // Smooth mouse parallax lerp
+    targetRotY = mouseX * 0.5 + clock * 0.15;
+    targetRotX = mouseY * 0.4 + Math.sin(clock * 0.8) * 0.05;
+    coreGroup.rotation.y += (targetRotY - coreGroup.rotation.y) * 0.05;
+    coreGroup.rotation.x += (targetRotX - coreGroup.rotation.x) * 0.05;
+
+    // Floating vertical oscillation
+    coreGroup.position.y = Math.sin(clock * 1.4) * 6;
+
+    // Exploded layers displacement lerping based on scrollProgress
+    // Stage 1+ (scrollProgress > 0.16): explode layers vertically and shield radially
+    const explodeT = Math.min(Math.max((scrollProgress - 0.1) / 0.4, 0), 1);
+    const reassembleT = Math.min(Math.max((scrollProgress - 0.84) / 0.15, 0), 1);
+    const netExplode = explodeT * (1.0 - reassembleT * 0.9);
+
+    // Shield plates separation
+    shieldPlates.forEach((p, idx) => {
+      const dist = 56 + netExplode * 80;
+      p.mesh.position.x = Math.cos(p.baseAngle) * dist;
+      p.mesh.position.z = Math.sin(p.baseAngle) * dist;
+      p.mesh.rotation.y = p.baseAngle + clock * 0.2;
+    });
+
+    // Vertical layer separation
+    radarGroup.position.y = netExplode * 60;
+    terrainGroup.position.y = -50 - netExplode * 65;
+
+    // Rotate internal crystal
+    crystalMesh.rotation.y += 0.008;
+    crystalMesh.rotation.x += 0.005;
+    wireMesh.rotation.y -= 0.006;
+    orbMesh.scale.setScalar(0.9 + Math.sin(clock * 3.5) * 0.12);
+
+    // Rotate orbital radar rings
+    r1.rotation.z += 0.012;
+    r2.rotation.x -= 0.009;
+
+    // Orbit sensor nodes
+    sensorNodes.forEach((s, idx) => {
+      const a = clock * 0.8 + (idx * Math.PI / 3);
+      s.position.x = Math.cos(a) * 95;
+      s.position.y = Math.sin(a) * 20;
+      s.position.z = Math.sin(a) * 95;
+    });
+
+    // Dynamic Core lighting and shockwave pulses based on stage
+    if(activeStage === 0){
+      coreLight.color.setHex(0x39d9ff);
+      crystalMat.color.setHex(0x14284d);
+    } else if(activeStage === 1){
+      coreLight.color.setHex(0xf5b942);
+      crystalMat.color.setHex(0x332510);
+    } else if(activeStage === 2 || activeStage === 3){
+      coreLight.color.setHex(0xff4d5e);
+      crystalMat.color.setHex(0x381216);
+      // Radiate shockwave rings
+      shockRings.forEach(sr => {
+        sr.scale += 0.035;
+        if(sr.scale > 4.2) sr.scale = 1.0;
+        sr.mesh.scale.setScalar(sr.scale);
+        sr.mesh.material.opacity = Math.max(0, 0.8 - (sr.scale / 4.2));
+      });
+    } else if(activeStage === 4){
+      coreLight.color.setHex(0x36d399);
+      crystalMat.color.setHex(0x102e23);
+    } else {
+      coreLight.color.setHex(0x39d9ff);
+      crystalMat.color.setHex(0x14284d);
+    }
+
+    // SOS beacon pulse
+    sosRing.scale.setScalar(1.0 + Math.sin(clock * 6.0) * 0.4);
+    sosRing.material.opacity = 0.5 + Math.sin(clock * 6.0) * 0.4;
+
+    // Safe route photon travel
+    const photonT = (clock * 0.3) % 1.0;
+    const pt = curve.getPointAt(photonT);
+    photon.position.copy(pt);
+
+    // Inflow data particles
+    const positions = particleSystem.geometry.attributes.position.array;
+    for(let i=0; i<particleCount; i++){
+      pVelocities[i].rad -= pVelocities[i].speed;
+      if(pVelocities[i].rad < 20){
+        pVelocities[i].rad = 220 + Math.random() * 80;
+      }
+      const r = pVelocities[i].rad;
+      const th = pVelocities[i].theta + clock * 0.1;
+      const ph = pVelocities[i].phi;
+
+      positions[i*3] = r * Math.cos(th) * Math.cos(ph);
+      positions[i*3+1] = r * Math.sin(ph);
+      positions[i*3+2] = r * Math.sin(th) * Math.cos(ph);
+    }
+    particleSystem.geometry.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function initCanvasFallback(canvas){
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  canvas.width = canvas.parentElement.clientWidth || 800;
+  canvas.height = canvas.parentElement.clientHeight || 600;
+  ctx.fillStyle = '#111A2C';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+/* ---------------- PRELOADER SEQUENCE ---------------- */
+let preloaderDismissed = false;
+
+function runPravahaPreloader(){
+  if(preloaderDismissed || sessionStorage.getItem('pra_preloaded') === 'true'){
+    dismissPreloader(true);
+    return;
+  }
+  const pre = document.getElementById('preloader');
+  if(!pre) return;
+
+  const bar = document.getElementById('preBarFill');
+  const pct = document.getElementById('prePct');
+  const step = document.getElementById('preStep');
+  const log = document.getElementById('preLog');
+
+  const steps = [
+    { p: 18, s: 'INITIALIZING MULTI-SPECTRAL DATA LAYERS', l: '> Doppler Radar S-Band Calibrated [OK]' },
+    { p: 42, s: 'MAPPING TERRAIN RISK & CONTOURS', l: '> Topographical Hydrology Meshes Synchronized [OK]' },
+    { p: 72, s: 'SYNCHRONIZING EARLY WARNING MATRIX', l: '> Geo-fenced Priority Assessment Armed [OK]' },
+    { p: 94, s: 'CONNECTING CLOSED-LOOP RESPONSE GRID', l: '> Citizens, Teams & Shelters Telemetry Online [OK]' },
+    { p: 100, s: 'SYSTEM ARMED · INTEL FLOWS', l: '> PRAVAHA RESPONSE CORE ONLINE' }
+  ];
+
+  let currentIdx = 0;
+  const interval = setInterval(() => {
+    if(preloaderDismissed){ clearInterval(interval); return; }
+    if(currentIdx < steps.length){
+      const cur = steps[currentIdx];
+      if(bar) bar.style.width = cur.p + '%';
+      if(pct) pct.textContent = cur.p + '%';
+      if(step) step.textContent = cur.s;
+      if(log) log.innerHTML = `<div>${cur.l}</div>`;
+      currentIdx++;
+    } else {
+      clearInterval(interval);
+      setTimeout(() => dismissPreloader(false), 350);
+    }
+  }, 420);
+}
+
+function dismissPreloader(immediate){
+  preloaderDismissed = true;
+  try{ sessionStorage.setItem('pra_preloaded', 'true'); }catch(e){}
+  const pre = document.getElementById('preloader');
+  if(pre){
+    if(immediate){
+      pre.style.display = 'none';
+    } else {
+      pre.classList.add('done');
+      setTimeout(() => { if(pre) pre.style.display = 'none'; }, 600);
+    }
   }
 }
+
+/* ---------------- MOUNT PRAVAHA LANDING ---------------- */
+function mountLanding(){
+  pageIn();
+  runPravahaPreloader();
+  initPravahaResponseCore();
+
+  // Anime.js HUD Line Drawing
+  if(typeof anime !== 'undefined'){
+    ani({
+      targets: '#praHudSvg path',
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 1600,
+      delay: anime.stagger(140),
+      easing: 'easeInOutSine'
+    });
+    ani({
+      targets: '.pra-chap-card',
+      opacity: [0, 1],
+      translateY: [24, 0],
+      duration: 700,
+      delay: anime.stagger(150),
+      easing: 'easeOutQuad'
+    });
+    if(!RM){
+      ani({
+        targets: '.loopRing',
+        strokeDashoffset: [anime.setDashoffset, 0],
+        rotate: [0, 360],
+        duration: 6400,
+        loop: true,
+        easing: 'linear'
+      });
+    }
+  }
+}
+
 function mountIncident(id){
   const inc=getInc(id),big=$('#scoreBig');
   if(big&&inc)ani({targets:big,innerText:[0,inc.score],round:1,duration:900,easing:'easeOutExpo'});
@@ -1791,6 +2995,13 @@ function stopDemo(){demoT.forEach(clearTimeout);demoT=[];S.demo.running=false;S.
 const ACTIONS={
   go:(id,el)=>go(el.dataset.to),
   scrollTo:(id,el)=>{const t=document.getElementById(el.dataset.to);if(t)t.scrollIntoView({behavior:RM?'auto':'smooth'});},
+  skipPreloader:()=>dismissPreloader(false),
+  jumpStage:(id,el)=>{
+    const stg = parseInt(el.dataset.stage||0);
+    const chapters = ['stage-awareness','stage-risk','stage-alerts','stage-sos','stage-routing','stage-coordination'];
+    const tgt = document.getElementById(chapters[stg]);
+    if(tgt) tgt.scrollIntoView({behavior:RM?'auto':'smooth'});
+  },
   nav:()=>document.body.classList.toggle('nav-open'),
   pickRole:(id,el)=>{S.role=el.dataset.role;save();go(roleHome(S.role));toast('Entering as <b>'+esc(el.querySelector('h3').textContent)+'</b>','t-green');},
   openDrawer:()=>openDrawer(),closeDrawer:()=>closeDrawer(),
@@ -1926,7 +3137,7 @@ document.addEventListener('keydown',e=>{
   if((e.key==='Enter'||e.key===' ')&&e.target instanceof Element&&e.target.matches('[data-act][role="button"]')){
     e.preventDefault();e.target.click();
   }
-  if(e.key==='Escape'){closeModal();closeDrawer();}
+  if(e.key==='Escape'){dismissPreloader(false);closeModal();closeDrawer();}
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='incSearch'){UI.f.q=e.target.value;const l=$('#incList');if(l)l.innerHTML=incListHTML();}
